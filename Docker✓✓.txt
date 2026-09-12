@@ -1,6 +1,24 @@
 Day-1
 ======================
+Why do we use Docker?
+Same environment everywhere
+-------------------------
+The application runs consistently on the developer machine, Jenkins, AWS, etc.
+Avoids the problem: “It works on my machine.”
+Package application and dependencies
+-----------------------------------
+Docker image can contain the application, runtime, libraries, and required configuration.
+Easy deployment
+---------------
+Instead of manually installing Java, dependencies, etc., we can simply run the Docker container.
+Isolation
+Each application runs in its own container without interfering with other applications.
+Useful for microservices
+----------------------
+Each microservice can have its own Docker image/container.
 sudo yum install docker -y
+
+=================================================================================================================
 docker -v
 sudo systemctl status docker
 sudo systemctl start docker
@@ -296,10 +314,12 @@ You can verify whether the Jenkins container is running.
 history
 Work: Displays the commands previously executed in the shell.
 
+what is the differnce between docker image and docker container ?
 
-
-
-
+"A Docker image is a read-only template used to create containers, 
+whereas a Docker container is a running instance of that image."
+Image = Blueprint 🏗️
+Container = Running application 🚀
 
 
 

@@ -1,0 +1,3 @@
+We implemented a CI pipeline using Jenkins where code is checked out from GitHub, built using Maven,
+analyzed using SonarQube, the JAR artifact is stored in Nexus,
+then a Docker image is created and scanned using Trivy, and finally the Docker image is pushed to AWS ECR.
