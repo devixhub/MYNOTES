@@ -1,0 +1,103 @@
+CI/CD Project - Day 1 Practical Steps
+
+STEP 1: Go to Desktop
+
+1 Create a folder named:
+    CICD-Project
+5.  Open the folder.
+
+  --------------------------------
+
+STEP 2: Clone GitHub Repositories
+
+Clone React UI
+
+git clone https://github.com/devsecopstrainer/react-ui.git
+
+Clone Course Service
+
+git clone https://github.com/devsecopstrainer/course-service.git
+
+Clone Student Service
+
+git clone https://github.com/devsecopstrainer/student-service.git
+
+Verify folders:dir
+ -----------------------
+  STEP 3: Build Project
+  -----------------------
+
+Run:
+
+mvn clean package
+
+What happens? 1. Deletes old build files. 2. Downloads dependencies. 3.
+Compiles Java code. 4. Creates executable
+JAR in target folder.
+ -------------------------------------
+  STEP 4: Run Spring Boot Application
+  -------------------------------------
+cd target
+Run:
+java -jar course-service-1.0.jar
+1. JVM starts
+       ↓
+2. Reads the JAR file
+       ↓
+3. Loads all Spring Boot libraries
+       ↓
+4. Executes the main() method
+       ↓
+5. Starts the embedded Tomcat server
+       ↓
+6. Connects to the database (if configured)
+       ↓
+7. Exposes REST APIs
+       ↓
+8. Application starts and waits for requests
+
+Wait until Spring Boot starts successfully.
+
+  -----------------------------
+  STEP 5: Open New CMD Window
+  -----------------------------
+Open another Command Prompt.
+
+cd student-service
+mvn clean package
+
+dir target
+
+Run:
+
+cd target
+
+java -jar student-service-1.0.7.jar
+
+  --------------------------------
+  STEP 6: Run React Application
+  --------------------------------
+Go to project:
+
+cd Desktop cd CICD-Project cd react-ui
+
+Install dependencies (first time only):
+
+npm install   (node module will be created)
+
+Start React:
+
+npm run dev
+
+Copy the Local URL shown and open it
+in a browser.
+> vite --host 0.0.0.0
+
+
+  VITE v8.2.0  ready in 6332 ms
+
+  ➜  Local:   http://localhost:5173/
+  ➜  Network: http://192.168.1.34:5173/  Ethernet
+  ➜  press h + enter to show help
+
+my sql must be installed and added to env 

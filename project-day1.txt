@@ -1,0 +1,209 @@
+CI/CD Project - Day 1 Notes
+
+1. Difference Between Monolithic and Microservices
+
+Monolithic Architecture
+
+-   Entire application is developed as a single project.
+-   UI, business logic, and database are tightly connected.
+-   Easy for small projects.
+-   Difficult to scale and maintain as the project grows.
+-   If one module fails, it can affect the whole application.
+-   Deployment is done for the entire application.
+
+Best Use Cases - Small applications - Startup projects - Internal
+company tools - Small development teams
+
+Microservices Architecture
+
+-   Application is divided into multiple independent services.
+-   Each service performs a specific task.
+-   Every service can be developed, tested, deployed, and scaled
+    independently.
+-   Easier to maintain large applications.
+-   Faster development because different teams work simultaneously.
+-   Failure of one service usually does not stop the complete
+    application.
+
+Best Use Cases - Banking applications - E-commerce websites - OTT
+platforms - Enterprise applications
+
+Which is Faster?
+
+Development: - Small project → Monolithic - Large project →
+Microservices
+
+Performance: - Monolithic can be slightly faster because there is no
+network communication. - Microservices may have small network overhead
+but scale much better for large applications.
+
+Interview Answer Monolithic is suitable for small applications.
+Microservices is suitable for large enterprise applications because it
+provides better scalability, flexibility, fault isolation, and
+independent deployment.
+
+------------------------------------------------------------------------
+
+2. Project Architecture
+
+User (Browser) | v React UI | v —————————— | Course Service (Spring
+Boot) | Student Service (Spring Boot) —————————— | v MySQL / AWS RDS
+
+Explanation
+
+1.  UI Layer
+
+-   Developed using React.
+-   Angular can also be used.
+-   Provides frontend pages.
+-   Sends API requests to backend services.
+
+2.  Microservices Layer
+
+-   Spring Boot services.
+-   Project is divided into smaller services.
+-   Example:
+    -   Course Service
+    -   Student Service
+
+3.  Database Layer
+
+-   MySQL for local development.
+-   AWS RDS for cloud deployment.
+
+------------------------------------------------------------------------
+
+3. Local Setup
+
+Step 1 Install Java JDK
+
+Step 2 Install Maven
+
+Step 3 Install Git
+
+Step 4 Install Node.js (NPM is installed automatically.)
+
+Step 5 Clone repositories
+
+git clone https://github.com/devsecopstrainer/react-ui.git
+
+git clone https://github.com/devsecopstrainer/course-service.git
+
+git clone https://github.com/devsecopstrainer/student-service.git
+
+------------------------------------------------------------------------
+
+4. Project Folder Structure
+
+Project
+
+├── react-ui ├── springboot-course-service └──
+springboot-student-service
+
+------------------------------------------------------------------------
+
+5. Push Code to GitHub
+
+git status
+
+git add .
+
+git commit -m “Initial Commit”
+
+git push origin main
+
+------------------------------------------------------------------------
+
+6. Build Tool
+
+Build Tool Used: Maven
+
+Purpose - Download dependencies - Compile source code - Run tests -
+Package application - Generate executable JAR
+
+Command
+
+mvn clean package
+
+Explanation
+
+clean Deletes previous build files.
+
+package Compiles project and creates JAR file.
+
+------------------------------------------------------------------------
+
+7. Run Spring Boot Application
+
+Go inside project folder.
+
+Build project
+
+mvn clean package
+
+Check generated files
+
+dir
+
+Go to target folder
+
+dir target
+
+Run application
+
+java -jar jarfile-name.jar
+
+Example
+
+java -jar course-service-0.0.1-SNAPSHOT.jar
+
+------------------------------------------------------------------------
+
+8. React Application
+
+Requirements
+
+-   Git
+-   Node.js
+-   NPM
+
+Open react-ui folder.
+
+Install dependencies
+
+npm install
+
+Run application
+
+npm run dev
+
+Development server starts.
+
+------------------------------------------------------------------------
+
+Complete Day-1 Flow
+
+1.  Install Java
+2.  Install Maven
+3.  Install Git
+4.  Install Node.js & NPM
+5.  Clone GitHub repositories
+6.  Open Spring Boot project
+7.  Run mvn clean package
+8.  Check JAR using dir
+9.  Run java -jar
+10. Open React project
+11. Run npm install
+12. Run npm run dev
+13. React UI connects with Spring Boot APIs
+14. Spring Boot services connect to MySQL/RDS
+
+------------------------------------------------------------------------
+
+Git Repositories
+
+React UI https://github.com/devsecopstrainer/react-ui
+
+Course Service https://github.com/devsecopstrainer/course-service
+
+Student Service https://github.com/devsecopstrainer/student-service

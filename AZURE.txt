@@ -1,0 +1,32 @@
+1/-azure vm creation
+2/azure security group
+3/-useses basic command and git push and jenkin creation
+
+
+
+pipeline {
+  agent any
+  tools{
+    jdk "JAVA_HOME"
+	maven "MVN_HOME"
+	}
+  stages {
+  stage 'git clone'{
+  steps git 'repo link' 
+  echo 'git clone complited'
+
+ }
+ 
+  
+  
+  }
+   
+
+
+
+
+
+
+
+
+  }

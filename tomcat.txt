@@ -1,0 +1,50 @@
+install tomcat
+================
+install java
+sudo yum install java-17 -y
+
+tomcat download 
+========================
+sudo wget https://dlcdn.apache.org/tomcat/tomcat-10/v10.1.56/bin/apache-tomcat-10.1.56.tar.gz
+step 3: sudo tar -xzf apache-tomcat-10.1.56.tar.gz
+step 4: sudo mv apache-tomcat-10.1.56 tomcat10
+step 5: sudo chown -R ec2-user:ec2-user tomcat10
+step 6: rm apache-tomcat-10.1.56.tar.gz 
+
+
+
+=>By default the manager webapp is restricted to the host in which tomcat is installed. Lets make it accessible from anywhere.
+
+       sudo vi tomcat10/webapps/manager/META-INF/context.xml
+
+       Add the following line inside the <context> tag:
+
+       <Valve className="org.apache.catalina.valves.RemoteAddrValve" allow="^.*$" />
+
+=>By default no users are created for the tomcat. Lets create an admin user:
+    sudo vi tomcat10/conf/tomcat-users.xml
+
+============
+<role rolename="admin"/> 
+<role rolename="admin-gui"/> 
+<role rolename="admin-script"/> 
+<role rolename="manager"/> 
+<role rolename="manager-gui"/> 
+<role rolename="manager-script"/> 
+<role rolename="manager-jmx"/> 
+<role rolename="manager-status"/> 
+<user name="admin" password="admin123" roles="admin,manager,admin-gui,admin-script,manager-gui,manager-script,manager-jmx,manager-status"/>
+
+=>chnage max size in this below path 
+tomcat10/webapps/manager/WEB-INF 
+ set maximun imit
+ 
+ cd bin
+ ./startup.sh
+-------------------------
+   
+=>go to browser and take the ec2 public ip and put in below fromat
+     =>public ip:8080
+tomcat location
+------------
+webapps => application need to deploy here 

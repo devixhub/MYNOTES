@@ -1,0 +1,130 @@
+core components of Helm
+----------------------------------------------------
+Chart
+Repository
+Release
+----------------------------------------------------
+Chart->consider it is container image
+Repository -> consider it is image registory
+release ->consider it is running conatiner
+----------------------------------------------------
+->Repository is the place where you can store the chart
+->Release is the running instance of chart
+----------------------------------------------------
+CHART
+----------------------------------------------------
+->It contains everything you need to deploy an application
+->Includes templates, values, and metadata(like a config bundle)
+->Reusable, versioned blueprint of your app
+->Can be shared via chart repositories or reused across env
+----------------------------------------------------
+REPO
+------------------------
+->stores and shares versioned helm charts
+->you can add multiple repos and search across them
+->popular ones include bitnami, Truecharts, grafana.
+->charts from many repos are indexed on artifacthub.io
+->use helm repo add, list, search repo to interact
+----------------------------------------------------
+RELEASE
+------------------------
+->A running instance of a chart in your cluster
+->Created with helm install <relase-name>
+->Each release has its own config,history,and state
+->Can be upgrade, rolled back or uninstalled
+->Same chart can be installed multiple times as different release (app1-dev,app1-prod, etc))
+------------------------
+Repository->containes->charts->installed as->releases
+------------------------
+HELM INSTALL
+------------------------
+Homebrew
+------------------------
+brew install helm
+
+chocolatey
+------------------------
+choco install kubernetes-helm
+
+scoop
+------------------------
+scoop install helm
+
+------------------------
+Binary
+------------------------
+# Download Helm binary
+wget https://get.helm.sh/helm-v3.19.0-linux-amd64.tar.gz
+
+# Extract the downloaded file
+tar -zxvf helm-v3.19.0-linux-amd64.tar.gz
+
+# Move Helm binary
+sudo mv linux-amd64/helm /usr/local/bin/helm
+
+# Verify Helm installation
+helm version
+
+----------------------------------------------------
+INSTALL-HELM
+-------------
+curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+chmod 700 get_helm.sh
+./get_helm.sh
+----------------------------------------------------
+helm version
+helm -h : it will show the help
+
+----------------------------------------------------
+Bitnami provides pre-packaged applications and Helm charts that make it easier to deploy common
+software on Kubernetes.
+
+ADD REPO
+------------------------
+helm repo add bitnami https://charts.bitnami.com/bitnami
+helm search repo bitnami
+helm search bitnami | grep nginx
+
+to install nginx charts
+------------------------
+->helm install charts-name(release) reponame/
+->helm install nginx1 bitnami/nginx
+->helm install charts-name(release) reponame/
+->helm install nginx1 bitnami/nginx
+-------
+NOTE: Release is nothing but a deploy instance of charts
+kubectl get po
+
+To install prometheus charts
+------------------------
+helm install prometheus bitnami/prometheus
+======================
+helm repo add
+helm search
+helm install
+helm list
+helm uninstall nginx1
+COMMANDS
+------------
+kubectl get po
+kubectl get svc
+kubectl get deploy
+helm list
+-----------------------------------------
+mkdir -p idream-app/{payments,students}
+cd idream-app
+helm create payments
+helm create students
+---
+inside each folder
+        chart.yaml
+        values.yaml -> it will do any custmization of template
+        templates
+        charts
+------------------------
+
+
+
+
+
+

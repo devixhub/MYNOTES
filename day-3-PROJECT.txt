@@ -1,0 +1,122 @@
+8. React App - Build using Jenkins, 
+9. SAST - SonarQube, 
+10. Nexus setup, 
+12. Image Build - Docker, 
+13. Image Scan - Trivy Scan.
+14. Tag Name - Change dynamically; 
+15. Image Store - DockerHub, ECR.
+16. Argo CD - Setup.
+----------------------------------------
+DUE TO WEBHOOK Jenkins ALSO CALLED CI TOOL , EACH TIME DEVLOPER PUSH THE CODE
+IT TRIGGER .
+>>ADDING WEBHOOK 
+>> NOW TO SCAN THE CODE WE GOING TO USE SonarQube 
+SonarQube checks our code before deployment and tells us whether the code is clean,
+ maintainable, and has security issues.
+ STEP-1
+ ---------
+CRAETING INSTANCE FOR SONARQUBE , RECOMMANDED 4GB RAM
+IN INBOUND RULE WE ADD PORT NUMBER- 9000 FOR SONAR AND FOR SSH 22
+COMMANDS
+sudo apt update && sudo apt upgrade -y
+sudo apt install openjdk-21-jdk -y
+https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-26.6.0.123539.zip
+sudo yum install unzip
+unzip sonarqube-26.6.0.123539.zip
+> cd /bin 
+>cd linux-x86-64/   sonar.sh is there
+give permission to it chown.
+we have to execute it > ./sonar.sh console
+then run ip with :9000 code for sonarqube ui
+pasDe9777361319@
+
+>create a local project there you add project name and branch main or master
+then follow intance as default>with jenkins >github as devops platform
+ >create jenkins file maven >
+ copy the code
+ 
+node {
+  stage('SCM') {
+    checkout scm
+  }
+  stage('SonarQube Analysis') {
+    def mvn = tool 'Default Maven';
+    withSonarQubeEnv() {
+      sh "${mvn}/bin/mvn clean verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=student-service -Dsonar.projectName='student-service'"
+    }
+  }
+}
+>goto home of sonar >project(student-service)>locally>generate token
+>copy the token and continue
+sqp_4094449f9c5256aaae64482c67d0d6fd2f1b99f2(mytoken)
+copy the down which will avilable there
+sh "mvn clean verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
+  -Dsonar.projectKey=student-service \
+  -Dsonar.projectName='student-service' \
+  -Dsonar.host.url=http://13.233.132.232:9000 \
+  -Dsonar.token=sqp_4094449f9c5256aaae64482c67d0d6fd2f1b99f2"
+  
+  add it in jenkins file stage.
+-------------------------------NEXT-STAGE-------------
+>create a new server for nexus .
+afer installation process
+goto >setting > repository > create new >maven2 hosted >then goto new repo >copy repo url and hit
+>
+
+<distributionManagement>
+<repository>
+<id>repoR</id>
+<name>repoR</name>
+<url>http://3.108.190.54:8081/repository/repoR/</url>
+</repository>
+<distributionManagement>
+----------------------------
+for relese repo we edit
+<distributionManagement>
+<repository>
+<id>student-service</id>
+<name>student-service</name>
+<url>http://13.235.74.5:8081/repository/student-service/</url>
+</repository>
+<distributionManagement>
+
+copy paste it end before build
+>then go to the server where nexus install then go to setting.xml path:cd /etc/maven
+copy it >cp settings.xml /home/ec2-user/.m2.
+
+search the entire instance for your keyword command -> find / -name ".m2" -type d 2>/dev/null
+------------------------------------------
+setting.xml 
+need to add in .m2(ec2-user: ls -a /.m2/vi settings.xml(add below scripts inside settings)
+=====================
+<settings>
+<servers>
+<server>
+<id>repoR</id>
+<username>admin</username> #nexus username
+<password>jayram123</password> # nexus password
+</server>
+<server>
+<id>repo</id>
+<username>admin</username>
+<password>jayram123</password>
+</server>
+</servers>
+</settings>
+-----------------------
+
+
+<settings>
+    <servers>
+        <server>
+            <id>student-service</id>
+            <username>admin</username>
+            <password>nexus123</password>
+        </server>
+    </servers>
+</settings>
+
+
+
+
+

@@ -1,0 +1,413 @@
+step-1:.github/workflows
+
+step 2:
+name: Shell Script Workflow
+
+on:
+  push:
+
+jobs:
+  job-1:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Give Execute Permission
+        run: chmod +x scripts/deploy.sh
+
+      - name: Execute Shell Script
+        run: ./scripts/deploy.sh
+
+  job-2:
+    runs-on: ubuntu-latest
+    needs: job-1
+
+    steps:
+      - name: Final Step
+        run: echo "Job 2 executed after Job 1"
+
+  job-3:
+    runs-on: ubuntu-latest
+    needs: job-2
+
+    steps:
+      - name: Test Apache
+        run: |
+          sudo systemctl start apache2
+          curl http://localhost
+		
+---------------------------------------------------------
+scripts/deploy.sh
+
+#!/bin/bash
+
+echo "=================================="
+echo "Starting deployment"
+echo "=================================="
+
+echo "Step 1: Installing Apache"
+sudo apt-get update
+sudo apt-get install -y apache2
+
+echo "Step 2: Checking Apache status"
+sudo systemctl status apache2
+
+echo "=================================="
+echo "Shell script executed successfully"
+echo "=================================="
+---------------------------------------------
+maven itegration
+
+maven-docker-github-actions/
+│
+├── .github/
+│   └── workflows/
+│       └── ci-cd.yml
+│
+├── src/
+│   ├── main/
+│   │   ├── java/
+│   │   │   └── com/
+│   │   │       └── example/
+│   │   │           └── demo/
+│   │   │               ├── DemoApplication.java
+│   │   │               └── HelloController.java
+│   │   └── resources/
+│   │       └── application.properties
+│   │
+│   └── test/
+│       └── java/
+│           └── com/
+│               └── example/
+│                   └── demo/
+│                       └── DemoApplicationTests.java
+│
+├── .dockerignore
+├── .gitignore
+├── Dockerfile
+└── pom.xml
+src/main/java/com/example/demo/
+
+package com.example.demo;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+@SpringBootApplication
+public class DemoApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(DemoApplication.class, args);
+    }
+}
+
+package com.example.demo;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
+@RestController
+public class HelloController {
+    @GetMapping("/")
+    public String home() {
+        return "Hello from GitHub Actions + Maven + Docker!";
+    }
+    @GetMapping("/health")
+    public String health() {
+        return "Application is healthy";
+    }
+}
+
+
+
+package com.example.demo;
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
+@SpringBootTest
+class DemoApplicationTests {
+    @Test
+    void contextLoads() {
+    }
+}
+
+--------------------------------------------------------------
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+         https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.3.5</version>
+        <relativePath/>
+    </parent>
+    <groupId>com.example</groupId>
+    <artifactId>demo</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <name>demo</name>
+    <properties>
+        <java.version>17</java.version>
+    </properties>
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+</project>
+
+
+
+target/
+.idea/
+*.iml
+.vscode/
+.DS_Store
+
+
+FROM eclipse-temurin:17-jre
+WORKDIR /app
+COPY target/demo-0.0.1-SNAPSHOT.jar app.jar
+EXPOSE 8080
+ENTRYPOINT ["java", "-jar", "app.jar"]
+
+
+name: Maven Build and Docker Push
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+      - name: Check Java Version
+        run: java -version
+      - name: Check Maven Version
+        run: mvn -version
+      - name: Maven Clean
+        run: mvn clean
+      - name: Maven Test
+        run: mvn test
+      - name: Maven Package
+        run: mvn package -DskipTests
+      - name: Check JAR File
+        run: ls -lh target/
+		
+		------------------------------------------------
+		
+
+
+- name: Login to Docker Hub
+        if: github.event_name == 'push'
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Build Docker Image
+        if: github.event_name == 'push'
+        run: |
+          docker build \
+          -t ${{ secrets.DOCKERHUB_USERNAME }}/maven-demo:${{ github.run_number }} \
+          -t ${{ secrets.DOCKERHUB_USERNAME }}/maven-demo:latest \
+          .
+      - name: Check Docker Images
+        if: github.event_name == 'push'
+        run: docker images
+      - name: Push Version Image
+        if: github.event_name == 'push'
+        run: |
+          docker push \
+          ${{ secrets.DOCKERHUB_USERNAME }}/maven-demo:${{ github.run_number }}
+      - name: Push Latest Image
+        if: github.event_name == 'push'
+        run: |
+          docker push \
+          ${{ secrets.DOCKERHUB_USERNAME }}/maven-demo:latest
+-------------------------------------------------------------------------------------------
+github-action-Day-3
+-------------------
+example 1:
+-------------------
+name: Terraform Deployment
+
+on: push
+
+jobs:
+  deploy:
+    env:
+      AWS_ACCESS_KEY_ID: "${{ secrets.AWS_ACCESS_KEY_ID }}"
+      AWS_SECRET_ACCESS_KEY: "${{ secrets.AWS_SECRET_ACCESS_KEY }}"
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Code Checkout
+        uses: actions/checkout@v4
+
+      - name: Set Up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.12.2
+      - name: Terraform Init, Plan
+         run: |
+          terraform init
+          terraform plan
+
+      - name: Terraform Apply
+         run: terraform apply -auto-approve
+=======================================================
+create a git hub repo > goto inside repo settings >left side there is secrate and variable
+>action >new repository secrate  > one by one add access key and secreate key from iam .
+>create iam user > give adminstrative acess > generate acess key
+
+TFLint
+TFLint is a linting/static-analysis tool for terraform code. 
+It checks your .tf files and warns you about mistakes, invalid configurations,
+ deprecated syntax, and provider-specific problems before you run terraform apply.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,557 @@
+MAVEN STEPS :-
+--------------
+STEP-1:
+INSTALL JAVA
+sudo yum install java-21 --y   (21,17 java version currently supporting)
+
+STEP-2:
+INSTALL MAVEN
+sudo yum install maven    (mvn -version)
+
+STEP-3:
+CREATE FOLDER
+mkdir mvn-workspace
+
+STEP-4:
+TO GENERATE THE POM FILE,SRC FOLDER AND FOLDER STRUCTURE AND THE DEPEDENCY AND ALSO M2
+mvn archetype:generate
+>CHOOSE NUMBER B/W 9:
+>DEFINE VALUE PROPRTY FOR "GROUP ID": com.idream
+>DEFINE VALUE PROPRTY FOR "artifactid": app
+>DEFINE VALUE PROPRTY FOR "version" 1.0snapshot: 1.0
+>DEFINE VALUE PROPRTY FOR "package": jar
+THEN LS TO CHECK/VERIFY
+app/src pom.xml
+
+>mvn compile  -----(1)
+must be use in location mvn-workspace/app/
+.
+└── maven-workspace
+    └── app
+        ├── mvnw
+        ├── mvnw.cmd
+        ├── pom.xml
+        ├── src
+        │   ├── main
+        │   │   ├── java
+        │   │   │   └── jar
+        │   │   │       ├── App.java
+        │   │   │       ├── Greeting.java
+        │   │   │       └── GreetingController.java
+        │   │   └── resources
+        │   │       ├── META-INF
+        │   │       │   └── native-image
+        │   │       │       └── jar
+        │   │       │           └── app
+        │   │       │               ├── jni-config.json
+        │   │       │               ├── native-image.properties
+        │   │       │               ├── reflect-config.json
+        │   │       │               └── resource-config.json
+        │   │       └── application.properties
+        │   └── test
+        │       ├── java
+        │       │   └── jar
+        │       │       ├── AppTest.java
+        │       │       └── GreetingControllerTest.java
+        │       └── resources
+        │           └── junit-platform.properties
+        └── target
+            ├── classes
+            │   ├── META-INF
+            │   │   ├── native-image
+            │   │   │   └── jar
+            │   │   │       └── app
+            │   │   │           ├── jni-config.json
+            │   │   │           ├── native-image.properties
+            │   │   │           ├── reflect-config.json
+            │   │   │           └── resource-config.json
+            │   │   └── spring.components
+            │   ├── application.properties
+            │   └── jar
+            │       ├── App.class
+            │       ├── Greeting.class
+            │       └── GreetingController.class
+            ├── generated-sources
+            │   └── annotations
+            └── maven-status
+                └── maven-compiler-plugin
+                    └── compile
+                        └── default-compile
+                            ├── createdFiles.lst
+                            └── inputFiles.lst
+
+
+
+>after that target folder created
+goto target/classes/jar
+there will be app.class present (binary code converted)
+
+>goto app/
+mvn test -----(2)
+go to target folder and check test-classes/jar/appTEST.class
+
+>goto mvn-workspace/app/target/surefire-reports/
+cat jar.apptest.txt
+check also cd/src/
+
+>mvn compile -----(3)
+mvn compile
+      │
+      ▼
+1. Read pom.xml
+      │
+      ▼
+2. Validate project
+      │
+      ▼
+3. Check .m2/repository for dependencies/create target folder
+      │
+      ▼
+4. If missing → Download from Maven Central
+      │
+      ▼
+5. Store dependencies in .m2/repository
+      │
+      ▼
+6. Compile .java files
+      │
+      ▼
+7. Generate .class files in target/classes
+
+
+>>mvn test  ----(4)
+mvn test
+      │
+      ▼
+1. validate
+      │
+      ▼
+2. compile (main source code)
+      │
+      ▼
+3. Compile test source code
+      │
+      ▼
+4. Run JUnit/TestNG test cases
+      │
+      ▼
+5. Surefire Plugin generates test reports
+      │
+      ▼
+6. Build PASS or FAIL
+
+>mvn package -----(5)
+mvn package
+      │
+      ▼
+1. validate
+      │
+      ▼
+2. compile (.java → .class)
+      │
+      ▼
+3. test (Run JUnit/TestNG tests)
+      │
+      ▼
+4. package (.class → JAR/WAR)
+      │
+      ▼
+5. Store JAR/WAR in target/
+it will created app-1.0.jar in target folder.
+>> mvn install ----(6)
+mvn install
+      │
+      ▼
+1. validate
+      │
+      ▼
+2. compile
+      │
+      ▼
+3. test
+      │
+      ▼
+4. package (Create JAR/WAR)
+      │
+      ▼
+5. verify
+      │
+      ▼
+6. Install/copy JAR/WAR into     
+   ~/.m2/repository
+   it will create .jar in .m2 as well as create target folder
+-it will create idream in .m2 and also take back-up to .m2
+.m2/repository/multiple file , com/com/idream/app/1.0/app-1.0.jar
+
+* --> mvn clean
+it will delete the target folder or it will delete output folder.
+
+
+
+-------------------------------------------------------------
+DOWNLOADING JAVA IN WINDOW
+>GOTO ORACLE SITE THERE GO LOWER VERSION 
+JDK 21
+> DOWNLOAD MAVEN apache-maven-3.9.16-bin.zip
+>AFTER INTALLING COPY THE PATH OF JAVA BIN C:\Program Files\Java\jdk-21.0.11\bin
+>create mvn install file in desktop and copy the extracted maven into that folder
+after that copy the path
+C:\Users\DELL\Desktop\mvn install
+
+>>> TO ACTIVE IN ENTIRE SYSTEM WE HAVE TO SET ENVIROMENT VARIABLE
+START MENU >> TYPE env >> system env varible >> new (add)(user variable)>>
+variable name - JAVA_HOME
+variable value -C:\Program Files\Java\jdk-21.0.11
+FOR MAVEN:
+VARIABLE NAME -M2_HOME
+VARIABLE VALUE-C:\Users\DELL\Desktop\mvn_install
+
+>THEN GO TO SYSTEM VARIBLE >PATH> 
+ADD NEW 
+FOR MAVEN: C:\Users\DELL\Desktop\mvn_install\bin
+FOR JAVA: C:\Program Files\Java\jdk-21.0.11\bin
+--------------------------------------------------------
+nexux
+
+
+==================================
+nexus install
+=========================
+Step1:
+sudo yum install java-21 -y
+Step2: Install Nexus
+sudo mkdir /app
+cd /app
+
+ ####sudo wget https://www.sonatype.com/products/nexus-community-edition-download
+
+sudo wget https://download.sonatype.com/nexus/3/nexus-3.85.0-03-linux-x86_64.tar.gz
+sudo tar -zxvf nexus-3.85.0-03-linux-x86_64.tar.gz
+sudo mv nexus-3.85.0-03 nexus
+
+sudo adduser nexus
+sudo passwd nexus
+
+sudo chown -R nexus:nexus /app
+
+sudo vi /app/nexus/bin/nexus.rc , if it is not there create one 
+run_as_user="nexus"
+#run_as_user=" " # root
+sudo ln -s /app/nexus/bin/nexus /etc/init.d/nexus
+What is /etc/init.d?
+Linux directory that contains startup/service scripts.
+init.d contains scripts used to start, stop, restart, or check services in Linux.
+
+su - nexus
+---
+service nexus start  
+/app/nexus/bin/nexus run
+
+------------
+we will get below error
+============================
+OpenJDK 64-Bit Server VM warning: INFO: os::commit_memory(0x0000000757000000, 2835349504, 0) failed; error='Not enough space' (errno=12)
+#
+# There is insufficient memory for the Java Runtime Environment to continue.
+# Native memory allocation (mmap) failed to map 2835349504 bytes. Error detail: committing reserved memory.
+# An error report file with more information is saved as:
+# /app/nexus/hs_err_pid26534.log
+=========================================
+go to below path
+====================
+sudo vi /app/nexus/bin/nexus.vmoptions
+
+copy below lines
+---------
+For low memory, keep it like:
+
+-Xms512m
+-Xmx512m
+-XX:MaxDirectMemorySize=512m
+----------------
+and remove
+   -Xms2703m
+   -Xmx2703m
+
+=======================
+take the public ip: 8081
+=======================
+if required 
+----------------------
+sudo rm -rf /app/sonatype-work/nexus3/tmp/*
+sudo rm -rf /app/sonatype-work/nexus3/cache/*
+sudo rm -rf /app/sonatype-work/nexus3/plugin-cache 2>/dev/null || true
+------------------------------------------------------------------------------------------
+========================
+pom file(maven server)
+
+===============
+
+<distributionManagement>
+<repository>
+<id>repoR</id>
+<name>repoR</name>
+<url>http://3.108.190.54:8081/repository/repoR/</url>
+</repository>
+<snapshotRepository>
+<id>repo</id>
+<name>repo</name>
+<url>http://3.108.190.54:8081/repository/repo/</url>
+</snapshotRepository>
+</distributionManagement>
+
+------------------------------
+need to add in .m2(ec2-user: ls -a /.m2/vi settings.xml(add below scripts inside settings)
+=====================
+<settings>
+<servers>
+<server>
+<id>repoR</id>
+<username>admin</username> #nexus username
+<password>jayram123</password> # nexus password
+</server>
+<server>
+<id>repo</id>
+<username>admin</username>
+<password>jayram123</password>
+</server>
+</servers>
+</settings>
+=======================
+http://3.21.41.237:8081/repository/repoR/
+
+http://3.21.41.237:8081/repository/repo/
+
+
+1.0-SNAPSHOT
+-------------------------------------------------------------------------------
+
+my url of repoR--http://18.221.64.54:8081/repository/repoR/
+my snapshot url--http://18.221.64.54:8081/repository/repo/
+
+<distributionManagement>
+<repository>
+<id>repoR</id>
+<name>repoR</name>
+<url>http://3.21.41.237:8081/repository/repoR/</url>
+</repository>
+<snapshotRepository>
+<id>repo</id>
+<name>repo</name>
+<url>http://3.17.73.62:8081/repository/repo/</url>
+</snapshotRepository>
+</distributionManagement>
+------------------------------------
+
+<distributionManagement>
+<repository>
+<id>repoR</id>
+<name>repoR</name>
+<url>http://3.17.73.62:8081/repository/repoR/</url>
+</repository>
+<snapshotRepository>
+<id>repo</id>
+<name>repo</name>
+<url>http://3.17.73.62:8081/repository/repo/</url>
+</snapshotRepository>
+</distributionManagement>
+
+
+<settings>
+<servers>
+<server>
+<id>repoR</id>
+<username>admin</username> #nexus username
+<password>qwe12</password> # nexus password
+</server>
+<server>
+<id>repo</id>
+<username>admin</username>
+<password>qwe12</password>
+</server>
+</servers>
+</settings>
+
+cat ~/.m2/settings.xml
+
+sudo yum update && sudo yum upgrade -y
+sudo yum install java-21 -y
+
+sonatype nexus repository >> settings>> create new repository >> maven-2 hosted >>
+
+
+
+-----------------------------------------------------------------
+edit the pom file'-->
+
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+         http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.isee</groupId>
+    <artifactId>com.isee.app</artifactId>
+    <version>1.0</version>
+    <packaging>jar</packaging>
+
+    <name>com.isee.app</name>
+    <description>Blank project for GraalVM</description>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <java.version>1.8</java.version>
+        <maven.compiler.source>${java.version}</maven.compiler.source>
+        <maven.compiler.target>${java.version}</maven.compiler.target>
+        <spring-boot.version>2.2.2.RELEASE</spring-boot.version>
+        <start-class>isee.jar.App</start-class>
+        <graal.version>19.2.1</graal.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.oracle.substratevm</groupId>
+            <artifactId>svm</artifactId>
+            <version>${graal.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.junit.vintage</groupId>
+                    <artifactId>junit-vintage-engine</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>junit</groupId>
+                    <artifactId>junit</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+    </dependencies>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>${spring-boot.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <build>
+        <extensions>
+            <extension>
+                <groupId>kr.motd.maven</groupId>
+                <artifactId>os-maven-plugin</artifactId>
+                <version>1.6.2</version>
+            </extension>
+        </extensions>
+
+        <plugins>
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.22.0</version>
+            </plugin>
+        </plugins>
+    </build>
+
+    <!-- Nexus Repository Configuration -->
+    <distributionManagement>
+        <repository>
+            <id>repoR</id>
+            <name>repoR</name>
+            <url>http://3.21.41.237:8081/repository/repoR/</url>
+        </repository>
+
+        <snapshotRepository>
+            <id>repo</id>
+            <name>repo</name>
+            <url>http://3.21.41.237:8081/repository/repo/</url>
+        </snapshotRepository>
+    </distributionManagement>
+
+    <profiles>
+
+        <profile>
+            <id>jar</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.springframework.boot</groupId>
+                        <artifactId>spring-boot-maven-plugin</artifactId>
+                        <version>${spring-boot.version}</version>
+
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>repackage</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+
+                        <configuration>
+                            <mainClass>${start-class}</mainClass>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
+            <id>graal</id>
+
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.oracle.substratevm</groupId>
+                        <artifactId>native-image-maven-plugin</artifactId>
+                        <version>${graal.version}</version>
+
+                        <executions>
+                            <execution>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>native-image</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+
+                        <configuration>
+                            <mainClass>${start-class}</mainClass>
+                            <detail>true</detail>
+                            <imageName>${project.artifactId}-${os.detected.classifier}</imageName>
+                            <outputDirectory>${basedir}/target/classes</outputDirectory>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+
+        </profile>
+
+    </profiles>
+
+</project>
+-------------------------------------------
+goto .m2 >>inside repository >> create settings.xml through vi 
+then paste
+-------------------------
+go to nexus repo >> inside repoR >>copy the link >> click browse >> plus sign of 1.0
+>> do mvn deploy again
+it will fail bcz of relese-repo
+>>go to pom file change the version into 1.1
+then do mvn deploy 
+it will work 
+git token --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

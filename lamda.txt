@@ -1,0 +1,62 @@
+
+-------------------------------------------------------
+regular batch link-- https://us06web.zoom.us/j/84631116442?pwd=wjDTG9iC64F2OPPW54onWER5DVaiEh.
+weekly exam link-- https://us06web.zoom.us/j/82784269482?pwd=b8DLvJeYGPTbQVVa8ebI2vlHaa8QA4.1
+-------------------------------------------------------------------------------------
+LAMDA CODE
+----------
+import json
+import os
+
+def lambda_handler(event, context):
+    my_variable = os.environ.get("MY_ENV_VAR")
+    
+    return {
+        'statusCode': 200,
+        'body': json.dumps("AWS Lambda with environment variable = " + my_variable)
+    }
+	-------------------------------------------------------------------------------
+	<<DELETING UNUSED SNAPSHOT THROUGH LAMDA CODE>>
+	
+	import boto3
+
+ec2 = boto3.client('ec2')
+
+def lambda_handler(event, context):
+
+    deleted = []
+
+    # Get all snapshots owned by this account
+    snapshots = ec2.describe_snapshots(
+        OwnerIds=['self']
+    )['Snapshots']
+
+    # Get all existing volumes
+    volumes = ec2.describe_volumes()['Volumes']
+    volume_ids = {v['VolumeId'] for v in volumes}
+
+    for snapshot in snapshots:
+
+        snapshot_id = snapshot['SnapshotId']
+        volume_id = snapshot.get('VolumeId')
+
+        # If source volume does not exist, delete snapshot
+        if not volume_id or volume_id not in volume_ids:
+
+            try:
+                ec2.delete_snapshot(
+                    SnapshotId=snapshot_id
+                )
+
+                deleted.append(snapshot_id)
+
+                print(f"Deleted: {snapshot_id}")
+
+            except Exception as e:
+                print(f"Failed to delete {snapshot_id}: {str(e)}")
+
+    return {
+        "statusCode": 200,
+        "deleted_snapshots": deleted
+    }
+	----------------------------------------------------

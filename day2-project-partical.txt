@@ -1,0 +1,78 @@
+CI/CD PROJECT - DAY 2
+STEP-BY-STEP PRACTICAL NOTES
+============================
+ DAY-2 PIPELINE OVERVIEW
+--------------------------------
+
+The Day-2 project pipeline has these steps:
+
+STEP 1  -> Code Build -> Artifact
+STEP 2  -> SAST -> Source Code Analysis
+STEP 3  -> Sonar Analysis -> Report
+STEP 4  -> Docker Image -> Build and Push to Container Registry
+STEP 5  -> Image Scan -> Trivy
+STEP 6  -> Deploy to K8S Cluster
+----------------------------------------------------------------
+STEP 1:
+ - JENKINS SETUP
+CREATE A INSTANCE
+Open the terminal/SSH session of the Jenkins server.
+Create the Jenkins installation script ,FOR FASTER WORK
+Create a script file:
+VIM jenkins-install.sh
+
+ 
+ Give execute permission to the script
+sudo chmod jenkins-install.sh u+x
+ Execute the script->./jenkins-install.sh
+ 
+step-2:
+set-up jenkins password 
+download plug in needed for project -pipeline graph analysis.
+nodes>config>executer 0 or mark temporary it will offline the node
+
+STEP-4: Create another VM for worker node
+like we have react ui and springboot application so we have create multple worker node
+for the dedicated applications.
+This VM will be used as the Jenkins Worker/Agent.
+There will now be:
+VM-1 = Jenkins Controller 
+VM-2 = Jenkins Agent/Worker >java , maven ,git
+then in vm-1>node> permanet agent> number of executer (2)>remote root directory path add >
+label-microservice >usage only build jobs with label matching this node > lunch method ssh 
+ >host-ipadress of worker node>
+credentials-ssh username and private key >click user name secreate > enter private key
+host key verification > non verifying statargy
+
+step-5
+create a freestyle job student-service
+pipeline script test -> agent { label 'microservice'
+} 
+>create a new repo CICD under this create a jenkins file name student-service
+> then under the freestylejob add git repo and jenkins file name change to student-service
+#sh command for linux and bat command for windows
+cloning code
+------------
+pipeline {
+    agent { label 'microservice' }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git branch: 'main', url: 'https://github.com/devsecopstrainer/student-service.git'
+            }
+        }
+
+        stage('Compile') {
+            steps {
+                sh 'mvn clean compile'
+            }
+        }
+
+----------------------------------------------------------------------------
+sudo apt install openjdk-21-jre -y
+sudo apt install openjdk-21-jdk -y
+------------------------------------------------
+ovrally day-2
+Jenkins (Master Slave Concept, Jenkins File, Pipeline, WebHook),
+MicroService - Build using Jenkins

@@ -1,0 +1,356 @@
+Jenkins
+===============================
+Day-1
+------------------
+https://www.jenkins.io/
+
+sudo wget -O /etc/yum.repos.d/jenkins.repo \
+    https://pkg.jenkins.io/rpm-stable/jenkins.repo
+-----------------------------------------------------------------------------------------	
+	[ec2-user@ip-172-31-9-170 ~]$ sudo alternatives --config java
+There are 3 programs which provide 'java'.
+
+  Selection    Command
+-----------------------------------------------
+*+ 1           /usr/lib/jvm/java-26-amazon-corretto.x86_64/bin/java
+   2           /usr/lib/jvm/java-17-amazon-corretto.x86_64/bin/java
+   3           /usr/lib/jvm/java-21-amazon-corretto.x86_64/bin/java
+
+Enter to keep the current selection[+], or type selection number: 3
+[ec2-user@ip-172-31-9-170 ~]$ 
+sudo systemctl daemon-reload
+sudo systemctl restart jenkins
+
+-----------------------------------------------------------------------------------------
+	
+	
+sudo yum upgrade
+sudo yum install java-21
+sudo yum install jenkins -y
+# Add required dependencies for the jenkins package
+sudo yum install java-21 -y
+sudo yum install jenkins -y
+sudo systemctl start jenkins
+sudo systemctl enable jenkins
+sudo systemctl restart jenkins
+sudo systemctl stop jenkins
+sudo systemctl status jenkins
+
+
+-----------------
+t3.small
+jenkins->8080(port)
+-----------------------------------
+default path of jenkins= cd /var/lib/jenkins
+----------------------------------------
+ Maven home: /usr/share/maven=M2_HOME_MASTER
+ java_home: /usr/lib/jvm/java-17 =JAVA_HOME_MASTER
+ --------------------------------------
+ ps -ef | jenkins
+ to check whether the port connect to 8080 or not
+ 
+ 
+
+ 
+ 
+pipeline {
+
+    agent any
+
+    tools {
+        jdk "JAVA_HOME_MASTER"
+        maven "M2_HOME_MASTER"
+    }
+
+    stages {
+
+        stage('Git Clone') {
+            steps {
+                git 'https://github.com/devixhub/git-maven-testing.git'
+                echo 'Git clone completed'
+            }
+        }
+
+        stage('Compile') {
+            steps {
+                sh 'mvn compile'
+                echo 'Compile completed'
+            }
+        }
+
+        stage('Test') {
+            steps {
+                sh 'mvn test'
+                echo 'Test completed'
+            }
+        }
+
+        stage('Package') {
+            steps {
+                sh 'mvn package'
+                echo 'Package completed'
+            }
+        }
+
+    }
+}
+
+http://18.225.98.204:8080
+http://18.188.141.233:8080/
+
+http://18.188.141.233:8080/github-webhook/
+
+
+
+
+http://18.227.97.160:8080//job/JOB_1/build?token=mytoken
+
+--------------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------------
+
+                                            JENKINS WINDOWS AGENT (NODE) SETUP
+                       CONFIGURE A WINDOWS MACHINE AS A JENKINS AGENT AND RUN FREESTYLE MAVEN JOBS.
+Step 1
+Manage Jenkins ->Nodes -> New Node-> Name: windows-node->Permanent Agent-> Create.
+Configure Remote Root Directory (path of your desktop folder), Label (win_slave), Usage: Use this node as
+much as possible, Launch method: Launch agent by connecting it to the controller, Save.
+
+step-2
+go to security ->agents ->TCP port for inbound agent ->random
+
+Step 3
+Open the node and click windows-node copy the code for window first command run, then run the second  command
+on the Windows machine you created by going to cmd mode. Verify node status becomes Online by refreshing
+
+step 4
+Configure JDK in Manage Jenkins ->Tools ADD JDK: JAVA_HOME_WIN. Java Home: C:\Program
+Files\Java\jdk-21 (PATH AVILABLE IN WINDOWS ENVIROMENT VARIABLE)
+Configure Maven in Manage Jenkins → Tools ADD Name: M2_HOME_WIN. Maven Home: C:\Program
+Files\Apache\Maven.(PATH AVILABLE IN WINDOWS ENVIROMENT VARIABLE)
+
+Step 5
+Create a Freestyle Project named WIN-JOB.
+Enable 'Restrict where this project can be run' and enter label 'win_slave'.
+Configure Git repository URL: https://github.com/devixhub/git-maven-testing.git
+configure jdk and maven path of window's ALREDY AVILABLE
+Build Step: Invoke top-level Maven targets. Maven: M2_HOME_WIN. Goals:compile. 
+
+                                        JENKINS LINUX AGENT (NODE) SET
+STEP 1
+FIRST go to tools add jdk and maven path with names
+java -/usr/lib/jvm/java-17      maven-/usr/share/maven
+
+step-2
+GO TO NODE 
+-> new node ->Remote root directory =/home/ec2-user/myjob(path of linux folder on linux machine) ->label=linux_slave
+->usage= click second one (only build jobs with label expression matching this node)
+->lunch method= ip adress of host  ,Credentials = add then global then add id,description and user name= ec2-user then add private key
+passpharse blank 
+-> Host Key Verification Strategy- non verifying verification statargy.
+STEP-3
+-------
+create job -> freestyle ->jdk to linux jdk path and add label and Restrict where this project can be run
+source code >git path ->https://github.com/devixhub/git-maven-testing.git  credential-ec2-user(linux) show in drop down
+build steps -> invoke top-level maven-> add maven linux path ->goals = compile
+
+
+
+
+pipeline {
+
+    agent {
+        label 'linux_slave'
+    }
+
+    tools {
+        jdk "JAVA_HOME_LINUX"
+        maven "M2_HOME_LINUX"
+    }
+
+    stages {
+
+        stage('Git Clone') {
+            steps {
+                git 'https://github.com/devixhub/git-maven-testing.git'
+                echo 'Git clone completed'
+            }
+        }
+
+        stage('Compile') {
+            steps {
+                sh 'mvn compile'
+                echo 'Compile completed'
+            }
+        }
+
+        stage('Test') {
+            steps {
+                sh 'mvn test'
+                echo 'Test completed'
+            }
+        }
+
+        stage('Package') {
+            steps {
+                sh 'mvn package'
+                echo 'Package completed'
+            }
+        }
+
+    }
+}
+-------------------------------
+JENKINS ARCHTICTURE
+HOW TO CREATE A JOB IN Jenkins
+WHAT IS PULGIN AND HOW TO WORK ON PLUG IN Jenkins
+WHAT IS GLOBAL TOOL LOCATION AND HOW TO ADD Tools
+GIT-MAVEN-Jenkins INTEGRATION
+ALL TRIGGERS IMPLEMATION IN Jenkins
+Build PIPELINE WITH UPSTREM DOWNSTREAM JOB
+HOW TO CREATE A USER (USER ManageMENT)
+MASTER SLAVE CONCEPT
+WHAT IS PIPELINE AND HOW TO USE DECLARATIVE PIPELINE
+WHAT IS JENKINS FILE AND HOW TO USE JENKINS FILE
+HOW TO SET GLOBAL SECURITY/CREADENTIAL IN Jenkins
+JENKIN FILE -PENDING
+jenkin multibranch pipeline set up -pending
+HOW TO TAKE BACK-UP IN JENKINS -PENDING
+TOMCAT DEPLOYMENT USING JENKINS FILE -PENDING
+JENKINS-NEXUS-SONARCUBE-TOMCAT INTEGRATION -PENDING
+
+---------------------------------------------------------------------------------
+declarative pipeline
+-------------------
+pipeline {
+agent any
+tools {
+      jdk ""
+	  mvn ""
+	  }
+ stages {
+     stage ('cheakout')
+	 {
+	 steps {
+	 git "url"
+	 steps {
+	 
+	 }
+	 }
+    stage ('compile')
+	 {
+	 steps {
+	  sh 'mvn compile'
+	
+	 }
+ }
+}
+
+}
+--------------------------------------------------------------
+-----------------------------------------------------------------
+JENKIN-INTERVIEW QUESTION DISCUSSION Day-1
+
+CI/CD Steps ?
+step-1 cheakout
+step-2 compile
+step-3 sonarcube analysis
+step-4 code coverage
+step-5 test execution
+step-6 package build
+step-7 image build 
+step-8 image scan
+step-9 Tagging & Push to ECR/Docker Hub
+
+What is the difference between code coverage and static code analysis?
+
+What is the difference between Poll SCM and Webhook?
+
+Can you elaborate on Matrix-based security and Project-based matrix authorization in Jenkins?
+
+How do you set up credentials in Jenkins?
+
+How or where do you store secrets in Jenkins?
+
+How do you set up an SVN project in Jenkins?
+
+What is the difference between Update, Install, and Available in Jenkins plugin management?
+
+What is a Remote Directory in Jenkins?
+
+How do you set up an agent in Jenkins, and how do you run a particular job on that agent?
+------------------------------------------------------------------------------------------
+ JENKIN-INTERVIEW QUESTION DISCUSSION Day-2                                 
+-------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

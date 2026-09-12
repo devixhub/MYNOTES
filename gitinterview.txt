@@ -1,0 +1,481 @@
+Git Interview Questions & Answers
+------------------------------------------------
+1. What is the difference between git init and git clone?
+
+git init:
+Creates a new empty Git repository in the current directory.
+Used when starting a new project.
+Does not copy any code.
+git clone:
+Copies an existing remote repository to your local machine.
+Downloads all files, branches, and commit history.
+Automatically sets the remote as origin.
+Example
+git init
+git clone https://github.com/user/project.git
+
+2. What is the difference between git pull and git clone?
+git clone?
+
+git pull:
+Used after cloning.
+Downloads the latest changes and merges them into your local branch.
+Example
+git clone https://github.com/user/project.git
+git pull origin main
+git clone:
+Copies an existing remote repository to your local machine.
+Downloads all files, branches, and commit history.
+Automatically sets the remote as origin.
+
+3. What is the difference between the Staging Area and the Local Repository?
+
+Staging Area (Index)
+Temporary area before committing.
+Local Repository
+Stores committed changes permanently.
+Created after git commit.
+Maintains the complete commit history.
+Flow
+Working Directory
+        │
+    git add
+        │
+ Staging Area
+        │
+  git commit
+        │
+ Local Repository
+4. How do you identify a local repository?
+A local repository contains a hidden .git folder.
+Command
+ls -a
+If .git exists, it is a Git repository.
+You can also use:
+git status
+5. Why is Git called a Distributed Version Control System?
+Because every developer has a complete copy of the repository, including all commits and history.
+Advantages
+Works offline.
+Faster operations.
+No dependency on a central server.
+Easy backup and recovery.
+6. What is the difference between Push and Pull?
+git push
+Uploads local commits to the remote repository.
+git pull
+Downloads the latest changes from the remote repository.
+Example
+git push origin main
+git pull origin main
+7. What is .gitignore?
+.gitignore is a file that tells Git which files or folders should not be tracked.
+Example
+*.log
+node_modules/
+target/
+.env
+Used to ignore:
+Log files
+Temporary files
+Build folders
+Passwords and secrets
+8. What is a branch in Git? When is the master/main branch created?
+A branch is an independent line of development.
+The default branch (master or main) is created automatically after the first commit.
+Create branch
+git branch feature
+9. What is the difference between Branch and Merge?
+Branch
+Creates a separate development line.
+Allows independent work.
+Merge
+Combines changes from one branch into another.
+10. Write the steps for Merge.
+Identify the source branch.
+Switch to the destination branch.
+Merge the source branch.
+Commands
+git checkout main
+git merge feature
+11. Write the commands for Branch and Merge.
+Create Branch
+git branch feature
+Merge Branch
+git merge feature
+12. How do you switch branches?
+git checkout branchname
+or
+git switch branchname
+13. What is a Merge Conflict? How do you solve it?
+A merge conflict occurs when the same part of a file is modified in different branches.
+Steps to solve
+Open the conflicted file.
+Remove conflict markers.
+Keep the correct code.
+Save the file.
+Stage the file.
+Commit the merge.
+Commands
+git add filename
+git commit
+14. What is the difference between git reset and git revert?
+git reset
+Moves HEAD to an earlier commit.
+Can remove commits.
+Rewrites history.
+Best for local repositories.
+Types
+git reset --soft commitid
+git reset --mixed commitid
+git reset --hard commitid
+git revert
+Creates a new commit that undoes a previous commit.
+Does not remove history.
+Safe for shared repositories.
+git revert commitid
+15. How do you delete a file from the local repository only?
+git rm --cached filename
+The file remains in your system but is removed from Git tracking.
+16. How do you delete a file from both the workstation and the local repository?
+git rm filename
+Then commit the change.
+17. Suppose a file is edited in the workstation but not committed. How do you discard the changes?
+git restore filename
+or
+git checkout filename
+This restores the file to the last committed version.
+18. In the same case, how do you add it to the local repository?
+Stage the file:
+git add filename
+Commit it:
+git commit -m "Your message"
+Or commit tracked files directly:
+git commit -a -m "Your message"
+Note: git commit -a works only for files that are already tracked by Git. New files must first be added using git add.
+--------------------
+==========================
+GIT INTERVIEW QUESTIONS & ANSWERS
+==========================
+
+1. What is the difference between Git Pull and Pull Request?
+
+Answer:
+Git Pull:
+- Used to download the latest changes from the remote repository to your local repository.
+- Command:
+  git pull origin main
+
+Pull Request (PR):
+- A request to merge your code into another branch (usually main/master).
+- It is used for code review before merging.
+- Created on GitHub, GitLab, or Bitbucket.
+
+Steps:
+1. git pull origin main
+2. Make code changes.
+3. git add .
+4. git commit -m "Bug fixed"
+5. git push origin feature-branch
+6. Create Pull Request.
+7. Team reviews the code.
+8. After approval, merge into the main branch.
+
+--------------------------------------------------
+
+2. Difference between git stash apply and git stash pop?
+
+Answer:
+
+git stash apply
+- Restores the stashed changes.
+- The stash remains in the stash list.
+- Can be used multiple times.
+
+Command:
+git stash apply
+
+git stash pop
+- Restores the stashed changes.
+- Removes the stash from the stash list.
+
+Command:
+git stash pop
+
+--------------------------------------------------
+
+3. How to delete stash?
+
+Delete one stash:
+git stash drop
+
+Delete all stashes:
+git stash clear
+
+--------------------------------------------------
+
+4. Difference between git pull and git fetch?
+
+Git Fetch:
+- Downloads the latest changes.
+- Does NOT merge them.
+- Safe to check changes first.
+
+Command:
+git fetch
+
+Git Pull:
+- Downloads the changes.
+- Automatically merges them into the current branch.
+
+Command:
+git pull
+
+--------------------------------------------------
+
+5. What is Git Tagging? Why do we use it?
+
+Answer:
+Git Tag is used to mark a specific commit as a version.
+
+Example:
+v1.0
+v2.0
+
+Purpose:
+- Release versions
+- Easy tracking
+- Rollback to a version
+
+Commands:
+git tag -a v1.0 -m "Version 1.0"
+git push origin v1.0
+
+--------------------------------------------------
+
+6. Difference between Git Merge and Git Cherry-pick?
+
+Git Merge
+- Combines all commits from one branch into another.
+
+Command:
+git merge feature
+
+Git Cherry-pick
+- Copies only a specific commit.
+
+Command:
+git cherry-pick <commit-id>
+
+--------------------------------------------------
+
+7. Difference between Rebase and Merge?
+
+Git Merge
+- Preserves commit history.
+- Creates a merge commit.
+
+Git Rebase
+- Moves your commits on top of another branch.
+- Creates a clean, linear history.
+- Rewrites commit history.
+
+--------------------------------------------------
+
+8. Difference between Git Clone and Git Fork?
+
+Git Clone
+- Copies a remote repository to your local machine.
+
+Command:
+git clone <repository-url>
+
+Git Fork
+- Creates a copy of another user's repository in your GitHub account.
+- Used when you don't have direct write access.
+
+--------------------------------------------------
+
+9. What is .gitignore? Why is it used?
+
+Answer:
+.gitignore tells Git which files should not be tracked.
+
+Examples:
+*.log
+node_modules/
+*.class
+.env
+
+Benefits:
+- Avoid unnecessary files.
+- Protect sensitive files.
+- Keep repository clean.
+
+--------------------------------------------------
+
+10. What is Git Log? Write commands.
+
+Answer:
+Git Log shows commit history.
+
+Commands:
+
+git log
+
+git log --oneline
+
+git log --graph
+
+git log --decorate
+
+git log --oneline --graph --all
+
+Information shown:
+- Commit ID
+- Author
+- Date
+- Commit Message
+
+--------------------------------------------------
+
+11. How many file stages are there in Git?
+
+There are three stages:
+
+1. Working Directory (Workspace)
+2. Staging Area (Index)
+3. Local Repository
+
+Flow:
+
+Workspace
+     ↓
+git add
+     ↓
+Staging Area
+     ↓
+git commit
+     ↓
+Local Repository
+
+--------------------------------------------------
+
+12. Difference between Staging Area and Local Repository?
+
+Staging Area
+- Temporary area.
+- Stores files before commit.
+- Uses git add.
+
+Local Repository
+- Stores committed files permanently.
+- Uses git commit.
+
+--------------------------------------------------
+
+13. What is Merge Conflict? How do you solve it?
+
+Answer:
+A merge conflict occurs when two branches modify the same file and Git cannot decide which change to keep.
+
+Steps:
+1. Open conflicted file.
+2. Remove conflict markers.
+3. Keep required code.
+4. Save the file.
+5. git add .
+6. git commit
+7. git push
+
+--------------------------------------------------
+
+14. What is HEAD in Git?
+
+Answer:
+HEAD is a pointer to the latest commit of the currently checked-out branch.
+
+Example:
+HEAD → main → Latest Commit
+
+--------------------------------------------------
+
+15. How do you delete a branch?
+
+Delete local branch:
+git branch -d branch-name
+
+Force delete:
+git branch -D branch-name
+
+Delete remote branch:
+git push origin --delete branch-name
+
+--------------------------------------------------
+
+16. Difference between HTTPS and SSH?
+
+HTTPS
+- Uses Username + Personal Access Token.
+- Port: 443
+- Easy to configure.
+
+SSH
+- Uses Public/Private Key.
+- Port: 22
+- More secure.
+- No need to enter username/password every time.
+
+Generate SSH key:
+ssh-keygen
+
+Add public key to GitHub:
+Settings → SSH and GPG Keys
+
+Test connection:
+ssh -T git@github.com
+
+--------------------------------------------------
+
+Important Git Commands
+
+git init
+git clone
+git status
+git add .
+git commit -m "message"
+git push
+git pull
+git fetch
+git branch
+git switch
+git checkout
+git merge
+git rebase
+git cherry-pick
+git stash
+git stash apply
+git stash pop
+git stash clear
+git tag
+git log
+git reset
+git revert
+git remote -v
+git diff
+git rm
+git mv
+git branch -d
+git push origin --delete branch
+
+==========================
+END OF GIT REVISION NOTES
+==========================
+
+==============================
+interview
+==============================
+1/-shell script
+2/-ansible playbook
+3/-terraform code
+4/-jenkins declarative pipeline code

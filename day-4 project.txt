@@ -1,0 +1,370 @@
+Jenkins worker for Java:
+ 1. Git
+ 2. Java
+ 3. Maven
+ 4. Docker
+ 5. Trivy
+ 6. AWS CLI
+ -------------------------
+ jenkinfile add steps
+ ---------------------
+ stage('SonarQube Analysis') {
+            steps {
+                dir('git-repo') {
+                    withSonarQubeEnv('SonarServer') {
+                        // sh 'mvn sonar:sonar -Dsonar.projectKey=student-service'
+                    }
+                }
+            }
+        }
+        stage('Quality Gate') {
+            steps {
+                timeout(time: 5, unit: 'MINUTES') {
+                    // waitForQualityGate abortPipeline: true
+                }
+            }
+			}
+        stage('Upload-to-nexus') {
+            steps {
+                dir('git-repo') {
+                    //sh "mvn deploy"
+                }
+            }
+        }
+        stage('Checkout DockerFile') {
+            steps {
+                dir('docker-repo') {
+                    // git branch: 'main', url: 'https://github.com/devsecopstrainer/cicd.git'
+                }
+            }
+        }
+ stage('checkout sourcecode') {
+            steps {
+                dir('docker-repo') {
+                    // git branch: 'main', url: 'https://github.com/devsecopstrainer/cicd.git'
+                }
+            }
+        }
+        stage('Docker build') {
+            steps {
+                sh "docker build -f docker-repo/student-service-Dockerfile -t student-svc:${BUILD_NUMBER} ."
+            }
+        }
+        stage('Trivy Scan') {
+            steps {
+                sh """
+                export TRIVY_TMPDIR=/data/trivy-tmp
+                sudo mkdir -p $TRIVY_TMPDIR
+                sudo mkdir -p /data/trivy-cache
+                sudo chown -R \$(whoami):\$(whoami) /data/trivy-cache /data/trivy-tmp
+                #trivy image --scanners vuln --severity HIGH,CRITICAL --exit-code 1 --cache-dir /data/trivy-cache student-svc:${BUILD_NUMBER}
+                #trivy image --scanners vuln --severity HIGH,CRITICAL --cache-dir /data/trivy-cache student-svc:${BUILD_NUMBER}
+                """
+            }
+        }
+        stage('ECR login') {
+            steps {
+                // sh 'aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin 834302008350.dkr.ecr.ap-south-1.amazonaws.com'
+            }
+        }
+        stage('Tag Image') {
+            steps {
+                // sh 'docker tag student-svc:${BUILD_NUMBER} 834302008350.dkr.ecr.ap-south-1.amazonaws.com/student-service:${BUILD_NUMBER}'
+            }
+        }
+        stage('Push Image To ECR') {
+            steps {
+                // sh 'docker push 834302008350.dkr.ecr.ap-south-1.amazonaws.com/student-service:${BUILD_NUMBER}'
+            }
+        }
+    }
+}
+ --------------------------------------
+ installation list for worker -node
+ ==================================
+ sudo hostnamectl set-hostname worker-1
+Log out and log in again
+
+touch script.sh
+chmod u+x script.sh
+cat > script.sh
+
+#!/bin/bash
+## Worker Node Script
+echo "jenkins worker installation starts ..."
+sleep 2
+sudo apt update && sudo apt upgrade -y && sudo apt autoremove -y
+sleep 2
+
+## For JDK installation
+sudo apt install openjdk-21-jdk -y
+echo "JDK installation success"
+sleep 2
+
+## For Maven installation
+sudo apt install maven -y
+echo "maven installation success"
+sleep 2
+
+## For Git installation
+sudo apt install git -y
+echo "git installation success"
+sleep 2
+
+## For Docker installation
+# Add Docker's official GPG key:
+sudo apt update
+sleep 2
+sudo apt install ca-certificates curl -y
+sleep 2
+sudo install -m 0755 -d /etc/apt/keyrings
+sleep 2
+sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+sleep 2
+sudo chmod a+r /etc/apt/keyrings/docker.asc
+sleep 2
+
+# Add the repository to Apt sources:
+sudo tee /etc/apt/sources.list.d/docker.sources <<EOF
+Types: deb
+URIs: https://download.docker.com/linux/ubuntu
+Suites: $(. /etc/os-release && echo "$VERSION_CODENAME")
+Components: stable
+Architectures: $(dpkg --print-architecture)
+Signed-By: /etc/apt/keyrings/docker.asc
+EOF
+sleep 2
+sudo apt update
+sleep 2
+sudo apt install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin -y
+sleep 2
+sudo systemctl start docker
+sleep 2
+sudo systemctl enable docker
+sleep 2
+sudo usermod -a -G docker ubuntu
+sleep 2
+echo -e "\n Docker success \n"
+
+## For Trivy
+echo "trivy installation starts ..."
+sleep 2
+sudo apt update && sudo apt upgrade -y
+sleep 2
+sudo apt-get install wget gnupg
+sleep 2
+wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | gpg --dearmor | sudo tee /usr/share/keyrings/trivy.gpg > /dev/null
+sleep 2
+echo "deb [signed-by=/usr/share/keyrings/trivy.gpg] [https://aquasecurity.github.io/trivy-repo/deb](https://aquasecurity.github.io/trivy-repo/deb) generic main" | sudo tee -a /etc/apt/sources.list.d/trivy.list
+sleep 2
+sudo apt-get update
+sleep 2
+sudo apt-get install trivy -y
+trivy --version
+# sudo mkdir -p /data/trivy-cache
+# sudo chown -R $(whoami):$(whoami) /data/trivy-cache
+echo "trivy installation success"
+
+## For AWS CLI
+sudo apt update
+sudo apt install -y unzip curl
+curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+unzip awscliv2.zip
+sudo ./aws/install
+aws --version
+echo "AWS CLI installation success"
+echo -e "\n Installation success, logout and login again. \n"
+
+
+Log out and log in again. Execute this command on worker-1:
+
+sudo systemctl reboot
+
+aws configure
+=========================================================
+SONARQUBE AUTO START SCRIPT
+---------------------------
+#!/bin/bash
+echo "going to sonar_qube directory "
+sleep 2
+cd sonar_qube/bin/linux*/
+sleep 2
+echo "SonarQube running process start.."
+./sonar.sh console
+=========================================================================================
+> aws configure in jenkins woker-node server.
+jenkins set-up for sonarqube:
+>>copy the sonarqube token and goto jenkins >manage_jenkins>credential>add credential> secreate text
+Analyze "student-service": sqp_79e49b7bf48025a6078ea23c6e5e2646b205c9d5
+ add plugin= soanr qube scanner
+ >add name and token path 
+>goto system > sonarqube server >
+
+
+Jenkins > Manage Jenkins > System > SonarQube servers |
+ Tick > Environment variables | Add SonarQube > name > SonarServer
+Line 271-273: Server URL > [http://3.108.40.252:9000/](http://3.108.40.252:9000/) | S
+erver authentication token > soanr token > save
+
+stage('SonarQube Analysis') {
+    steps {
+        withSonarQubeEnv('SonarServer') {
+            sh 'mvn sonar:sonar -Dsonar.projectKey=student-service'
+        }
+    }
+}
+
+-----------------------------------------------------------
+
+stage('Quality Gate') {
+    steps {
+        timeout(time: 3, unit: 'MINUTES') {
+               waitForQualityGate abortPipeline: true
+        }
+    }
+}
+
+after adding this code to jenkins file goto sonarqube
+>quality gate > create >
+
+
+Add a custom-rule to sonar qube quality check:
+sonar qube dashboard > quality gates > create > give a name as custom-rule
+ > Add Condition > On Overall Code > unit test success % > 60
+Projects > In Without, the project will be there, tick, it will come to with section.
+
+Fail Jenkins Pipeline on SonarQube Quality Gate Failure:
+
+  Step 1 - Enable Webhook in SonarQube
+    SonarQube needs to notify Jenkins when the Quality Gate result is ready.
+    Go to SonarQube -> Administration -> Configuration -> Webhooks -> Create
+    Name:   Jenkins
+    URL:    http://<jenkins-ip>:8080/sonarqube-webhook/
+    The trailing / at the end of the URL is important.
+
+==============================================================
+stage('Checkout Dockerfile') {
+    steps {
+        dir('docker-repo') {
+               git branch: 'main', url: 'https://github.com/devixhub/cicd.git'
+        }
+    }
+}
+
+stage('Docker build') {
+    steps {
+        sh 'echo "success"'
+           sh 'docker build -f docker-repo/student-service-Dockerfile -t student-service:${BUILD_NUMBER} .'
+    }
+}
+---------------------------------------------------------------
+trivy-scanner-
+------------
+stage('Trivy Scan') {
+        steps {
+            sh '''
+                export TMPDIR=/data/trivy-tmp
+                sudo mkdir -p $TMPDIR
+                sudo mkdir -p /data/trivy-cache
+                sudo chown -R $(whoami):$(whoami) /data/trivy-cache /data/trivy-tmp
+                #trivy image --scanners vuln --severity HIGH,CRITICAL --exit-code 1 --cache-dir /data/trivy-cache student-svc:${BUILD_NUMBER}
+                #trivy image --scanners vuln --severity HIGH,CRITICAL --cache-dir /data/trivy-cache student-svc:${BUILD_NUMBER}
+            '''
+        }
+    }
+
+==================================================
+after it go to aws for ECR (Elastic Container Registry)
+craete student-service repo >click that repo >> view push command > it will show commaand
+
+
+stage('ECR Login') {
+    steps {
+        sh 'echo "success"'
+        sh 'aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin 834362069350.dkr.ecr.ap-south-1.amazonaws.com'
+    }
+}
+stage('Tag Image') {
+    steps {
+        sh 'echo "success"'
+        sh 'docker tag student-svc:${BUILD_NUMBER} 834362069350.dkr.ecr.ap-south-1.amazonaws.com/student-service:${BUILD_NUMBER}'
+    }
+}
+stage('Push Image To ECR') {
+    steps {sh 'echo "success"'
+        sh 'docker push 834362069350.dkr.ecr.ap-south-1.amazonaws.com/student-service:${BUILD_NUMBER}'
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,327 @@
+Day-1
+======================
+sudo yum install docker -y
+docker -v
+sudo systemctl status docker
+sudo systemctl start docker
+sudo systemctl enable docker 
+----------------------
+sudo docker info-it will give you docker host information.
+Containers
+Images
+Docker version
+Storage driver
+Docker Root Directory
+Operating System
+CPU/Architecture
+cd /var/lib/docker 
+=====================
+con lifecycle
+-------------------
+sudo docker images - list the  image in docker host 
+Work:
+First Docker checks whether the image is available locally.
+If the image is not available locally, Docker pulls the image from the configured registry, commonly Docker Hub.
+After pulling the image, Docker creates and starts the container.
+---------------------------------------------------------------------------------------------------------------
+sudo docker ps - list the running con in the docker host 
+sudo docker ps -a : list the running and stopped con in the docker host 
+------
+sudo docker run imagename
+sudo docker run hello-world
+
+Docker image -> docker con
+---------------------------------------------------------------
+
+Day-2
+-------------
+sudo docker run centos
+it
+------
+sudo docker run -it centos:7 -> inside con
+need to go out of con and con shoud run
+    => ctrl pq
+ => con is running user need to go inside of con 
+     =>sudo docker attach conid
+ =>con shoud stop and user need to come out from the con 
+     =>exit
+ => con is stopped how to start and go inside of con 
+      =>sudo docker start conid
+	  =>sudo docker attach conid
+	  =>sudo docker stop conid (it will stop container from outside of container)
+-----------
+sudo docker run -it ubuntu
+--
+itd
+======
+sudo docker run -itd centos:7
+sudo docker run -itd ubuntu
+
+fa671c640475
+==================================================
+remove the con and image 
+---------------------------
+con start
+     =>stop
+	 =>remove
+con ->sudo docker rm conid
+image->sudo docker rmi image id 
+----
+httpd => web server
+---
+sudo yum install httpd -y
+sudo systemctl start httpd
+sudo 
+-----------
+nginx ->
+tomcat ->
+----------------
+attach
+exec 
+=================
+sudo docker run -it centos
+   42  sudo docker run -it centos:7
+   43  clear
+   44  sudo docker ps
+   45  sudo docker attach fa671c640475
+   46  sudo docker ps
+   47  sudo docker ps -a
+   48  sudo docker start fa671c640475
+   49  sudo docker ps
+   50  sudo docker attach fa671c640475
+   51  clear
+   52  sudo docker run -itd centos:7
+   53  sudo docker ps
+   54  sudo docker ps -a
+   55  sudo docker rm a07745b4fe63 fa671c640475 c6fe5218dc35 88432bab8e60 80df1dfaf231
+   56  sudo docker ps
+   57  sudo docker ps -a
+   58  sudo docker stop  a07745b4fe63
+   59  sudo docker rm a07745b4fe63
+     sudo docker ps -a
+   clear
+     sudo docker run -itd centos:7
+     sudo docker ps -a
+     sudo docker images
+     sudo docker rmi centos:7
+     sudo docker ps
+    
+     sudo docker rmi centos:7
+     sudo docker ps -a
+     sudo docker rm 61cd5221e4ca
+   sudo docker rmi centos:7
+     sudo docker images
+     sudo docker rmi hello-world
+     clear
+     sudo docker images
+     sudo docker run -itd httpd
+    sudo docker ps
+     sudo docker run -itd tomcat
+     sudo docker run -itd jenkins
+   sudo docker run -itd jenkins2.x
+   sudo docker run -itd jenkins 2.x
+   clear
+     sudo docker run -itd jenkins:2.60.3
+   sudo docker ps
+   history
+==================================================================================
+sudo docker run -it centos
+Work: Downloads the CentOS image if not available locally, then creates and starts a container.
+-it = interactive terminal, so you can enter commands inside the container.
+
+sudo docker run -it centos:7
+Work: Runs a CentOS version 7 container interactively.
+centos:7 means the image name is centos and the tag/version is 7.
+
+clear
+Work: Clears the terminal screen.
+It does not affect Docker containers, images, or anything else.
+
+sudo docker ps
+Work: Lists currently running Docker containers.
+It shows container ID, image, status, ports, and name.
+
+sudo docker attach fa671c640475
+Work: Connects your terminal to the running container with this container ID.
+You can interact with the process running inside the container.
+
+sudo docker ps
+Work: Checks which containers are currently running.
+The attached container should appear if it is still running.
+
+sudo docker ps -a
+Work: Lists all containers on the Docker host.
+It includes running, stopped, and exited containers.
+
+sudo docker start fa671c640475
+Work: Starts the existing stopped container with this container ID.
+It does not create a new container.
+
+sudo docker ps
+Work: Checks whether the started container is now running.
+The container should appear in the output.
+
+sudo docker attach fa671c640475
+Work: Attaches your terminal to the existing running container.
+It allows you to interact with that container again.
+
+clear
+Work: Clears the terminal screen.
+No Docker resource is changed.
+
+sudo docker run -itd centos:7
+Work: Creates and starts a new CentOS 7 container in the background.
+-i = interactive, -t = terminal, -d = detached/background mode.
+
+sudo docker ps
+Work: Lists the running containers.
+The newly created CentOS container should appear here.
+
+sudo docker ps -a
+Work: Lists all containers.
+It shows both running and stopped/exited containers.
+
+sudo docker rm a07745b4fe63 fa671c640475 c6fe5218dc35 88432bab8e60 80df1dfaf231
+Work: Removes the specified containers.
+Normally, containers must be stopped before they can be removed; use "docker rm -f" if you intentionally want to force removal.
+
+sudo docker ps
+Work: Shows currently running containers.
+Removed containers will not appear.
+
+sudo docker stop a07745b4fe63
+Work: Gracefully stops the running container with this ID.
+The container is stopped but still exists.
+
+sudo docker rm a07745b4fe63
+Work: Removes the stopped container.
+The container is deleted, but its image is not deleted.
+
+sudo docker ps -a
+Work: Checks all remaining containers.
+The removed container should no longer appear.
+
+clear
+Work: Clears the terminal screen.
+It does not change Docker resources.
+
+sudo docker run -itd centos:7
+Work: Creates and starts another CentOS 7 container in detached mode.
+If the image already exists locally, Docker uses the local image.
+
+sudo docker ps -a
+Work: Lists all containers.
+You can see the newly created CentOS 7 container and its status.
+
+sudo docker images
+Work: Lists Docker images stored locally.
+It shows repositories, tags, image IDs, and sizes.
+
+sudo docker rmi centos:7
+Work: Removes the CentOS 7 image from the local image store.
+It will fail if a container still depends on that image; remove the containers first.
+
+sudo docker ps
+Work: Lists running containers.
+It does not list Docker images.
+
+sudo docker rmi centos:7
+Work: Tries to remove the CentOS 7 image again.
+If a container still references the image, Docker will normally refuse the removal.
+
+sudo docker ps -a
+Work: Lists all containers, including stopped containers.
+Use this to find containers that may still reference centos:7.
+
+sudo docker rm 61cd5221e4ca
+Work: Removes the specified container.
+After removing it, the CentOS image may become removable if no other container references it.
+
+sudo docker rmi centos:7
+Work: Removes the CentOS 7 image from the local system.
+The image can now be removed if no containers are using it.
+
+sudo docker images
+Work: Lists the remaining local Docker images.
+centos:7 should no longer be listed.
+
+sudo docker rmi hello-world
+Work: Removes the hello-world image from the local image store.
+It does not remove containers created from the image.
+
+clear
+Work: Clears the terminal screen.
+Docker resources remain unchanged.
+
+sudo docker images
+Work: Lists all Docker images available locally.
+You can check whether httpd, tomcat, jenkins, etc. are present.
+
+sudo docker run -itd httpd
+Work: Creates and starts an Apache HTTP Server container in detached mode.
+If httpd is not local, Docker pulls the image from the configured registry, commonly Docker Hub.
+
+sudo docker ps
+Work: Lists currently running containers.
+The httpd container should appear if it started successfully.
+
+sudo docker run -itd tomcat
+Work: Creates and starts a Tomcat container in detached mode.
+Docker pulls the Tomcat image if it is not already available locally.
+
+sudo docker run -itd jenkins
+Work: Creates and starts a Jenkins container using the jenkins image/tag requested.
+If the image is not local, Docker attempts to pull it from the configured registry.
+
+sudo docker run -itd jenkins2.x
+Work: Tries to run an image named "jenkins2.x".
+If that image does not exist locally or in the configured registry, the command will fail.
+
+sudo docker run -itd jenkins 2.x
+Work: Docker interprets "jenkins" as the image and "2.x" as an invalid extra argument.
+This is not the correct way to specify a Jenkins version.
+
+clear
+Work: Clears the terminal screen.
+No Docker resource is changed.
+
+sudo docker run -itd jenkins:2.60.3
+Work: Creates and starts a Jenkins container using the specific image tag 2.60.3.
+jenkins = repository/image name, 2.60.3 = image tag/version.
+
+sudo docker ps
+Work: Lists the currently running containers.
+You can verify whether the Jenkins container is running.
+
+history
+Work: Displays the commands previously executed in the shell.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

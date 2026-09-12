@@ -1,0 +1,723 @@
+TERRAFORM 
+--------------
+"Terraform is used for infrastructure provisioning, while Ansible is used for configuration management. 
+Terraform creates the server and other cloud resources, and Ansible configures the server after it has been created.
+| Feature           | Ansible                                                  | Terraform                                        |
+| ----------------- | -------------------------------------------------------- | ------------------------------------------------ |
+| Primary purpose   | Configuration management and application deployment      | Infrastructure provisioning                      |
+| Approach          | Procedural (step-by-step tasks)                          | Declarative (describe desired state)             |
+| Typical use       | Install software, configure servers, deploy applications | Create cloud resources, networks, VMs, databases |
+| State management  | No central state required                                | Maintains a state file                           |
+| Agent requirement | Agentless (SSH/WinRM)                                    | Uses cloud/provider APIs                         |
+| Idempotency       | Supported through modules                                | Core design principle                            |
+| Best for          | Managing what's *inside* servers                         | Managing the infrastructure itself               |
+rraform is mainly used for Infrastructure as Code (IaC), which means creating and managing infrastructure resources such as EC2 instances, VPCs, subnets, load balancers, and databases. It works using a declarative approach and maintains a state file to track infrastructure.
+
+Ansible is mainly used for configuration management and application deployment.
+ It is agentless and connects to servers using SSH to install packages, configure services, and deploy applications.
+In a real-world scenario, 
+I would use Terraform to provision an EC2 instance and Ansible to install and configure software like Nginx,
+ Apache, or application code on that instance."
+-----------
+terraform script link -https://registry.terraform.io/providers/hashicorp/aws/latest/docs
+
+
+>>aws provider >> hasicop/aws 
+---------------------------------
+terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 6.7.0"
+    }
+    random = {
+      source  = "hashicorp/random"
+      version = "~> 3.1"
+    }
+  }
+  required_version = ">= 1.0"
+}
+
+provider "aws" {
+  region = "us-east-1"
+}
+
+-----------------------------------
+desire state & current state
+.tf  --> aws --> 5os/resources
+  ^               ^
+  |               |
+  desire state    current state
+  -----------------------------------
+  we created 5 resources where are two resource already present
+  we delete 2 resource 
+  2 modified
+  
+  --> when we use apply command , if we don't have the track record then
+  we unable to know which is modified.
+  --------------------------------------------
+ terraform {
+  backend "s3" {
+   bucket = "idreamit-terraform-state"
+   key = "dev/terraform.tfstate"
+   region = "ap-south-1"
+   encrypt = true
+   #use_lockfile = true
+}
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 6.0"
+    }
+  }
+}
+
+# Configure the AWS Provider
+provider "aws" {
+  region = "ap-south-1"
+}
+
+resource "aws_s3_bucket" "idream-bk" {
+bucket = "idreamit-bucket-123456"
+ tags = {
+  Name = "my test-bk"
+  Environment = "Dev"
+ }
+}
+-----------------------------
+1. terraform init
+
+Purpose: Initializes the Terraform project.
+
+Downloads the required provider plugins (e.g., AWS).
+Creates the .terraform directory.
+Run this first after creating or cloning a Terraform project.
+2. terraform validate
+
+Purpose: Checks whether the Terraform configuration is syntactically correct.
+
+Finds errors in your .tf files.
+Does not create any resources.
+3. terraform plan
+
+Purpose: Shows what Terraform will do before making changes.
+
+Displays which resources will be created, modified, or deleted.
+Helps you review the changes safely.
+4. terraform apply
+
+Purpose: Creates or updates the infrastructure.
+
+Executes the changes shown in terraform plan.
+Creates resources such as EC2 instances, VPCs, subnets, etc.
+5. terraform destroy
+
+Purpose: Deletes all infrastructure managed by Terraform.
+
+Removes the resources created by your Terraform configuration.
+Useful for cleaning up test environments and avoiding unnecessary cloud costs.
+---------------------------------------------------------------------------------
+===============================
+HOW TERRAFORM UPDATES INFRASTRUCTURE
+===============================
+
+Terraform ensures that your infrastructure always matches the Desired State.
+
+------------------------------------
+1. Desired State
+------------------------------------
+
+- The DevOps Engineer writes Terraform code in .tf files.
+- These .tf files define the infrastructure you want to create.
+
+Example:
+EC2 Instance
+VPC
+Subnet
+S3 Bucket
+Security Group
+IAM Role
+
+------------------------------------
+2. Terraform Apply
+------------------------------------
+
+Command:
+
+terraform apply
+
+Terraform compares:
+
+Desired State (.tf files)
+
+            VS
+
+Actual State (Current Infrastructure)
+
+It identifies the differences and performs the required actions.
+
+Terraform can:
+- Create resources
+- Update resources
+- Delete resources
+
+------------------------------------
+3. terraform.tfstate
+------------------------------------
+
+After applying the changes, Terraform updates the
+
+terraform.tfstate
+
+This file stores the current state of the infrastructure managed by Terraform.
+
+------------------------------------
+4. Infrastructure Matches State
+------------------------------------
+
+After the apply operation:
+
+Desired State = Actual State
+
+The infrastructure now exactly matches the Terraform code.
+
+====================================
+TERRAFORM WORKFLOW
+====================================
+
+DevOps Engineer
+        │
+        ▼
+Write Terraform Code (.tf files)
+        │
+        ▼
+terraform plan
+        │
+        ▼
+terraform apply
+        │
+        ▼
+terraform.tfstate (State File)
+        │
+        ▼
+AWS Infrastructure
+(EC2, VPC, S3, IAM, etc.)
+
+====================================
+WHAT IS terraform.tfstate?
+====================================
+
+terraform.tfstate stores the current state of the infrastructure managed by Terraform.
+
+It helps Terraform:
+- Track resources
+- Detect changes
+- Compare desired state with actual state
+- Update infrastructure efficiently
+
+Note:
+Never edit the terraform.tfstate file manually.
+
+====================================
+KEY POINTS
+====================================
+
+• .tf files define the Desired State.
+• terraform.tfstate stores the Actual State.
+• Terraform compares Desired State with Actual State.
+• Terraform only makes the required changes.
+• Store the state file securely (Amazon S3, GCS, Azure Storage) for team collaboration.
+• Desired State and Actual State should always remain synchronized.
+
+====================================
+WHY TERRAFORM?
+====================================
+
+✔ Consistency
+✔ Automation
+✔ Collaboration
+✔ Efficiency
+
+====================================
+COMMON TERRAFORM COMMANDS
+====================================
+
+terraform init      # Initialize Terraform
+terraform fmt       # Format Terraform files
+terraform validate  # Validate configuration
+terraform plan      # Preview changes
+terraform apply     # Create/Update infrastructure
+terraform destroy   # Delete infrastructure
+
+====================================
+INTERVIEW ANSWER
+====================================
+
+Terraform updates infrastructure by comparing the Desired State defined in the .
+tf files with the Actual State stored in the terraform.tfstate file. It identifies the differences,
+ creates, updates, or deletes resources as needed, and then updates the terraform.tfstate file so that
+ the Actual State matches the Desired State.
+ --------------------------------------------------------------------------------------------------------------
+ --------------------------------------------------------------------------------------------------------------
+ lockfile
+ ---------
+ ===============================
+use_lockfile = true (Terraform)
+===============================
+
+What is use_lockfile = true?
+
+use_lockfile = true enables state locking for the Terraform state file.
+
+It ensures that only one user or process can modify the Terraform state file at a time.
+
+------------------------------------
+Why do we use it?
+------------------------------------
+
+Without state locking:
+
+- User A runs terraform apply.
+- At the same time, User B also runs terraform apply.
+- Both users try to update the same terraform.tfstate file.
+- This can cause:
+  • State file corruption
+  • Resource conflicts
+  • Infrastructure inconsistency
+
+With state locking:
+
+- User A acquires the lock and starts the deployment.
+- User B tries to run terraform apply.
+- Terraform blocks User B and displays a state lock error.
+- After User A finishes, Terraform releases the lock.
+- User B can then run terraform apply.
+
+------------------------------------
+Example
+------------------------------------
+
+terraform {
+  backend "s3" {
+    bucket        = "my-terraform-state"
+    key           = "dev/terraform.tfstate"
+    region        = "ap-south-1"
+    encrypt       = true
+    use_lockfile  = true
+  }
+}
+
+------------------------------------
+How it Works
+------------------------------------
+
+DevOps Engineer A
+        │
+        ▼
+terraform apply
+        │
+        ▼
+Lock Acquired
+        │
+        ▼
+terraform.tfstate Updated
+        │
+        ▼
+Lock Released
+
+At the same time...
+
+DevOps Engineer B
+        │
+        ▼
+terraform apply
+        │
+        ▼
+Error: State is locked
+        │
+        ▼
+Wait until the lock is released
+
+------------------------------------
+Benefits
+------------------------------------
+
+✔ Prevents multiple users from modifying the state file simultaneously.
+✔ Prevents state file corruption.
+✔ Ensures only one terraform apply runs at a time.
+✔ Makes Terraform safe for team collaboration.
+
+------------------------------------
+Interview Answer
+------------------------------------
+
+use_lockfile = true enables state locking for the Terraform state file.
+ It ensures that only one user or process can modify the state file at a time.
+ If another user tries to run Terraform while the state is locked,
+ Terraform blocks the operation until the lock is released. This prevents state corruption and infrastructure conflicts.
+
+------------------------------------
+Easy Example
+------------------------------------
+
+Suppose three DevOps engineers are working on the same project.
+
+Devi  ---> terraform apply ---> Lock Acquired ✅
+
+Rahul ---> terraform apply ---> State is Locked ❌
+
+Amit  ---> terraform apply ---> Wait until the lock is released ⏳
+
+After Devi's deployment is completed, Terraform releases the lock, and Rahul or Amit can run terraform apply safely.
+---------------------------------------------------------------------------------------------------------------------
+selcet >> control + / =to comment everything on selected area.
+>> control + s = save
+----------------------------------------------------------
+##### 	RESOURCE S3 SYNTAX = aws_s3_bucket  #######
+-----------------------------------------------------------
+
+
+| Block                | Purpose                                                                            |
+| -------------------- | ---------------------------------------------------------------------------------- |
+| `terraform`          | Configures Terraform (version, backend, providers)                                 |
+| `provider`           | Connects Terraform to AWS, Azure, GCP, etc.                                        |
+| `resource`           | Creates infrastructure resources                                                   |
+| `variable`           | Accepts input values from the user                                                 |
+| `locals`             | Stores reusable values within the configuration                                    |
+| `output`             | Displays values after resources are created                                        |
+| `data`               | Reads information about existing infrastructure                                    |
+| `module`             | Reuses Terraform code across projects                                              |
+| `backend`            | Configures where the Terraform state file is stored (inside the `terraform` block) |
+| `required_providers` | Specifies and downloads the required providers (inside the `terraform` block)      |
+
+Remember: resource defines the EC2, 
+and tags inside that resource gives the EC2 its name and other labels.
+
+1. Hardcode the name
+tags = {
+  Name = "stage-web-server"
+}
+
+
+2. Use a variable — recommended
+
+In variable.tf:
+
+variable "instance_name" {
+  description = "Name of the EC2 instance"
+  type        = string
+}
+
+In terraform.tfvars:
+
+instance_name = "stage-web-server"
+
+In your EC2 resource:
+
+tags = {
+  Name = var.instance_name
+}
+==============================================================================
+day-10(list,tuple,set,map)
+--------------------------
+main.tf
+=======
+resource "aws_instance" "server" {
+  for_each = var.server_names
+
+  ami           = "ami-05416e951c79e4833"
+  instance_type = each.value
+
+  tags = {
+    Name = each.key
+  }
+}
+resource "aws_security_group" "web_sg" {
+  name = "web-sg"
+
+  dynamic "ingress" {
+    for_each = var.allowed_ports
+
+    content {
+      from_port   = ingress.value
+      to_port     = ingress.value
+      protocol    = "tcp"
+      cidr_blocks = ["0.0.0.0/0"]
+    }
+  }
+}
+resource "aws_instance" "server" {
+  for_each = var.server_names
+
+  ami           = "ami-05416e951c79e4833"
+  instance_type = "t3.micro"
+
+  tags = {
+    Name = each.value
+  }
+}
+resource "aws_security_group" "web_sg" {
+  name = "web-sg"
+
+  dynamic "ingress" {    #A dynamic block allows Terraform to generate multiple nested blocks automatically.
+    for_each = var.allowed_ports
+
+    content {
+      from_port   = ingress.value
+      to_port     = ingress.value
+      protocol    = "tcp"
+      cidr_blocks = ["0.0.0.0/0"]
+    }
+  }
+}
+
+variable.tf
+===========
+
+variable "server_names" {
+  type = set(string)
+  default = [
+    "web",
+    "app",
+    "db"
+  ]
+}
+
+variable "allowed_ports" {
+  type = set(number)
+}
+
+variable "instance_types" {
+  type = map(string)
+
+  default = {
+    dev  = "t2.micro"
+    test = "t2.small"
+    prod = "t2.medium"
+  }
+}
+variable "instance_types" {
+  type = map(string)
+
+  default = {
+    dev  = "t2.micro"
+    test = "t2.small"
+    prod = "t2.medium"
+  }
+}
+terraform.tfvars
+================
+server_names = [
+  "dev",
+  "test",
+  "prod",
+  "test"
+]
+
+allowed_ports = [
+  22,
+  80,
+  443,
+  80
+]
+
+
+===============================================================
+for_each
+========
+each.key and each.value are used when for_each is working with a map.
+key = label/name
+value = information stored under that label
+======================================================================
+MAP
+===
+variable "instance_types" {
+  type = map(string)
+
+  default = {
+    dev  = "t2.micro"
+    test = "t2.small"
+    prod = "t2.medium"
+  }
+}
+
+Here:
+
+dev, test, prod = keys
+t2.micro, t2.small, t2.medium = values
+map(string) means all values must be strings.
+
+resource "aws_instance" "server" {
+  for_each = var.instance_types
+
+  ami           = "ami-12345678"
+  instance_type = each.value
+
+  tags = {
+    Name = each.key
+  }
+}
+====================================================================
+=======
+OBJECT
+=======
+In Terraform, an object is used to group multiple related values together, 
+and those values can have different data types
+------
+name          -> string
+instance_type -> string
+port          -> number
+monitoring    -> bool
+---
+variable.tf
+===========
+variable "server" {
+    type = object({
+        name          = string
+        instance_type = string
+        port          = number
+        monitoring    = bool
+    })
+	}
+	
+terraform.tfvars
+----------------
+server = {
+    name          = "web-server"
+    instance_type = "t2.micro"
+    port          = 80
+    monitoring    = true
+}
+MAIN.TF
+---------
+resource "aws_instance" "server" {
+    ami           = "ami-094210f044117049d"
+    instance_type = var.server.instance_type
+    monitoring    = var.server.monitoring
+
+    tags = {
+        Name = var.server.name
+    }
+}
+interview:
+-------------------
+Object = a collection of named attributes that can have different data types.
+
+For real projects, object is very useful for passing complete configurations for EC2, VPC,
+subnet, database, application, or Kubernetes resources.
+
+Tuple
+====================
+====================
+Tuple is a collection that can contain different data types, 
+and each value is identified by its position/index.
+
+variable.tf
+-----------
+variable "server" {
+    type = tuple([string, string, number, bool])
+}
+terraform.tfvars
+----------------
+server = [
+    "web-server",
+    "t2.micro",
+    80,
+    true
+]
+
+
+main.tf
+===========
+resource "aws_instance" "server" {
+    ami           = "ami-12345678"
+    instance_type = var.server[1]
+    monitoring    = var.server[3]
+
+    tags = {
+        Name = var.server[0]
+    }
+}
+
+
+Count, depends_on , for_each,I provider
+
+This all provided by terraform provider to support the argument that's why called meta argument.
+
+depends_on
+====================
+depends_on is used to establish dependency between multiple resources.
+
+if you have 5 resources in terraform how does terrafrom know which resource provision
+1st  and if you have 10 different file get excuted 1st
+explicit dependancy it is the type of meta argument in which we define that resource B is depend
+on resource A , terraform will wait to create resource B till the resource A created
+
+count
+========
+it helps you count the value or itteror, it is work as a function but it is not a function it is
+meta argument, it help you count value in list or set or map and then we can use the value
+
+for_each
+--------
+it is kind of for loop for terrafrom which ittrat the mulitiple values for 1 by 1 .
+====================================================================================
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

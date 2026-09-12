@@ -1,0 +1,46 @@
+PLAYBOOK
+---------
+---
+- hosts: webserver
+  become: true
+
+  tasks:
+
+    - name: Install Apache
+      yum:
+        name: httpd
+        state: present
+
+    - name: Start Apache
+      service:
+        name: httpd
+        state: started
+        enabled: yes               #Automatically start Apache after every reboot.
+
+    - name: Create Index Page
+      copy:
+        dest: /var/www/html/index.html
+        content: |
+          <html>
+          <h1>Welcome to Apache Server</h1>
+          <h2>Deployed using Ansible</h2>
+          </html>
+		  
+		  
+		  
+"I created one Control Node and one Managed Node. 
+On the Control Node I installed Ansible, configured the inventory,
+ and wrote a playbook. The playbook installs Apache, starts the service, enables it at boot, 
+ and creates a custom web page. When I run ansible-playbook apache.yml, Ansible reads the inventory, 
+ establishes an SSH connection, copies modules temporarily to the managed node, executes each task sequentially, 
+ returns the results, and removes the temporary files. Since Ansible is agentless, no agent is installed on the managed node."
+ 
+ -------------------------------------
+ i got error in public ip slave machine should have to display welcome to apache server
+ 1> i have to cheak port number 80 is listening 
+ 
+ sudo ss -tulnp | grep :80
+ 
+ i found error in my http i typed https
+ http://3.16.159.45
+ 
