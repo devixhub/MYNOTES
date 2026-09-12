@@ -1,22 +1,1097 @@
 Day-1
 ======================
-Why do we use Docker?
-Same environment everywhere
--------------------------
-The application runs consistently on the developer machine, Jenkins, AWS, etc.
-Avoids the problem: “It works on my machine.”
-Package application and dependencies
+============================================================
+                    DOCKER NOTES
+============================================================
+
+
+1. WHAT IS DOCKER?
+------------------
+
+Docker is a containerization platform.
+
+It packages an application and all its required dependencies
+into a container so that the application can run consistently
+in different environments.
+
+Example:
+
+Application
+    |
+    +-- Java
+    +-- Python
+    +-- Maven
+    +-- Other dependencies
+    |
+    ---> Docker Container
+
+
+2. WHY DO WE NEED DOCKER?
+--------------------------
+
+PROBLEM 1:
+
+Suppose we have multiple applications.
+
+APP-1 requires Java 8
+APP-2 requires Java 11
+
+If both applications are deployed on the same machine,
+they may have dependency or version conflicts.
+
+Example:
+
+APP-1 ---> Java 8
+APP-2 ---> Java 11
+
+Both applications may not work properly because they
+require different Java versions.
+
+
+PROBLEM 2:
+
+Different applications may require different versions
+of the same software.
+
+For example:
+
+Application 1 ---> Java 8
+Application 2 ---> Java 11
+Application 3 ---> Java 17
+
+Managing different versions on one machine can create
+dependency problems.
+
+
+PROBLEM 3:
+
+RESOURCE UTILIZATION
+
+Suppose a machine has 8 GB RAM.
+
+One application may use only 500 MB RAM.
+
+The remaining resources may not be properly utilized.
+
+If another application is deployed on the same machine,
+there can be resource and dependency issues.
+
+Also, when one application is running, it may affect
+other applications.
+
+
+3. VIRTUALIZATION
+-----------------
+
+To solve these problems, companies use virtualization.
+
+Virtualization allows us to create multiple Virtual Machines
+(VMs) on a single physical machine.
+
+A software called a HYPERVISOR is used to create and run
+Virtual Machines.
+
+
+HYPERVISOR
+----------
+
+A hypervisor is software that allows us to create and run
+Virtual Machines on a physical machine.
+
+
+Example:
+
+                PHYSICAL MACHINE
+                       |
+                  HYPERVISOR
+              /        |        \
+             /         |         \
+           VM-1       VM-2       VM-3
+            |           |          |
+          OS-1        OS-2       OS-3
+            |           |          |
+          APP-1       APP-2      APP-3
+
+
+4. ADVANTAGES OF VIRTUALIZATION
+--------------------------------
+
+1. We can run different operating systems on one
+   physical machine.
+
+2. We can deploy multiple applications.
+
+3. Applications can have different OS environments.
+
+4. We can use different versions of software.
+
+5. Better isolation between applications.
+
+6. Multiple environments can be created on one
+   physical machine.
+
+
+5. DISADVANTAGES OF VIRTUALIZATION
 -----------------------------------
-Docker image can contain the application, runtime, libraries, and required configuration.
-Easy deployment
----------------
-Instead of manually installing Java, dependencies, etc., we can simply run the Docker container.
-Isolation
-Each application runs in its own container without interfering with other applications.
-Useful for microservices
+
+1. Each VM needs its own operating system.
+
+2. Each VM requires CPU and RAM.
+
+3. More resources are consumed.
+
+4. There is resource overhead because every VM has
+   a complete OS.
+
+5. VM creation and management can be heavier.
+
+6. Hardware resources may not be efficiently utilized.
+
+
+Example:
+
+Physical Machine = 8 GB RAM
+
+VM-1 ---> 2 GB RAM
+VM-2 ---> 2 GB RAM
+VM-3 ---> 2 GB RAM
+
+A significant amount of memory is consumed by the
+operating systems themselves.
+
+
+6. DOCKER
+---------
+
+Docker is a containerization platform.
+
+Docker packages the application and all its dependencies
+into a container.
+
+The container provides an isolated environment in which
+the application can run.
+
+
+Example:
+
+Application
+     |
+     +-- Java
+     +-- Python
+     +-- Maven
+     +-- Dependencies
+     |
+     ---> Docker Container
+
+
+7. WHY DO WE USE DOCKER?
+-------------------------
+
+Main reasons:
+
+1. Easy deployment
+
+2. Application isolation
+
+3. Better resource utilization
+
+4. Dependency management
+
+5. Same environment across different machines
+
+6. Lightweight compared to Virtual Machines
+
+
+Docker deployment flow:
+
+Dockerfile
+    |
+    v
+Docker Image
+    |
+    v
+Docker Container
+
+
+8. DOCKER CONTAINER
+-------------------
+
+A container is an isolated environment in which an
+application runs.
+
+The container contains the application and its required
+dependencies.
+
+Example:
+
+Container
+   |
+   +-- Application
+   +-- Java
+   +-- Python
+   +-- Maven
+
+
+Container is lightweight compared to a Virtual Machine
+because it does not require a complete guest operating
+system for every application.
+
+
+9. CONTAINER LIFECYCLE
 ----------------------
-Each microservice can have its own Docker image/container.
-sudo yum install docker -y
+
+When we create a container, the container has a lifecycle.
+
+Example:
+
+Create Container
+       |
+       v
+    Running
+       |
+       v
+     Stop
+       |
+       v
+    Stopped
+       |
+       v
+    Remove
+
+
+A container can be:
+
+- Created
+- Started
+- Running
+- Stopped
+- Removed
+
+
+10. DOCKER HOST
+---------------
+
+Docker Host means the machine where Docker is installed.
+
+Example:
+
+Ubuntu Machine
+      |
+      +-- Docker installed
+      |
+      +-- Docker Host
+      |
+      +-- Containers
+
+
+If we install Docker on an Ubuntu machine, that Ubuntu
+machine becomes a Docker Host.
+
+
+11. DOCKER CLIENT
+-----------------
+
+Docker Client is the interface through which we execute
+Docker commands.
+
+For example:
+
+docker run
+docker ps
+docker stop
+docker start
+docker rm
+docker images
+
+
+When we execute a Docker command, the Docker client sends
+the request to the Docker service running on the Docker Host.
+
+
+12. DOCKER SERVER / LOCAL REGISTRY
+-----------------------------------
+
+The Docker environment can also contain a local registry.
+
+A registry is used to store Docker images.
+
+Docker images can be stored locally or in a remote registry
+such as Docker Hub.
+
+
+13. DOCKER HUB
+--------------
+
+Docker Hub is a cloud-based public registry.
+
+It is used to:
+
+- Store Docker images
+- Share Docker images
+- Download Docker images
+
+Docker Hub can be used as a remote registry.
+
+
+Example:
+
+Developer
+    |
+    | docker push
+    v
+Docker Hub
+    |
+    | docker pull
+    v
+Another Developer
+
+
+14. DOCKER IMAGE
+----------------
+
+A Docker image is a package/template used to create
+containers.
+
+Example:
+
+myenv:v1
+
+Here:
+
+myenv = image name
+v1    = image tag/version
+
+
+Example:
+
+docker run myenv:v1
+
+
+This creates a container from the image.
+
+
+15. DOCKERFILE
+--------------
+
+Dockerfile contains instructions used to build a Docker image.
+
+Example:
+
+FROM ubuntu
+
+RUN apt update
+
+RUN apt install -y openjdk-11-jdk
+
+RUN apt install -y python3
+
+RUN apt install -y maven
+
+
+The Dockerfile specifies what we need inside the image.
+
+For example:
+
+Ubuntu
+   |
+   v
+Java
+   |
+   v
+Python
+   |
+   v
+Maven
+
+
+16. DOCKER BUILD
+----------------
+
+Docker build is used to create a Docker image from a
+Dockerfile.
+
+Command:
+
+docker build -t myenv:v1 .
+
+
+Flow:
+
+Dockerfile
+    |
+    | docker build
+    v
+Docker Image
+    |
+    | docker run
+    v
+Container
+
+
+17. WHAT HAPPENS DURING DOCKER BUILD?
+--------------------------------------
+
+When we execute:
+
+docker build -t myenv:v1 .
+
+Docker reads the Dockerfile instructions.
+
+Example:
+
+FROM ubuntu
+       |
+       v
+Ubuntu base layer
+
+Install Java
+       |
+       v
+Java layer
+
+Install Python
+       |
+       v
+Python layer
+
+Install Maven
+       |
+       v
+Maven layer
+
+
+These layers are combined to create the final Docker image.
+
+
+18. DOCKER IMAGE LAYERS
+-----------------------
+
+Docker images are built using layers.
+
+For example:
+
+Layer 4 ---> Maven
+Layer 3 ---> Python
+Layer 2 ---> Java
+Layer 1 ---> Ubuntu
+
+
+Each instruction in the Dockerfile can create a new
+filesystem layer.
+
+The final result is a Docker Image.
+
+
+19. DOCKER RUN
+--------------
+
+docker run is used to create and start a new container
+from a Docker image.
+
+Example:
+
+docker run -it centos
+
+
+Here:
+
+docker run = create and start a new container
+-it        = interactive terminal
+centos     = image name
+
+
+Another example:
+
+docker run -it centos:7
+
+
+Here:
+
+centos = image
+7     = tag/version
+
+
+20. docker run VS docker start
+------------------------------
+
+docker run:
+
+- Creates a NEW container from an image.
+- Starts that new container.
+
+Example:
+
+docker run -it centos
+
+
+If we execute docker run again:
+
+docker run -it centos
+
+another NEW container will be created.
+
+The image can be the same, but the container ID will be
+different.
+
+
+docker start:
+
+- Starts an EXISTING stopped container.
+- It does NOT create a new container.
+
+
+Example:
+
+docker start <container_id>
+
+
+IMPORTANT:
+
+docker run  ---> Create + Start NEW container
+
+docker start ---> Start EXISTING stopped container
+
+
+21. INTERACTIVE TERMINAL (-it)
+------------------------------
+
+-i means interactive.
+
+-t means allocate a terminal.
+
+Together:
+
+-it
+
+means we can interact with the container through the
+terminal.
+
+
+Example:
+
+docker run -it centos
+
+
+After entering the container, we can execute commands
+inside it.
+
+
+22. DOCKER ATTACH
+-----------------
+
+If a container is already running and we want to connect
+to its terminal:
+
+docker attach <container_id>
+
+
+Example:
+
+docker attach fa671c640475
+
+
+This attaches our terminal to the running container.
+
+
+23. EXIT FROM CONTAINER
+-----------------------
+
+If we are inside a container and type:
+
+exit
+
+
+the container's main process may stop.
+
+Example:
+
+Container is running
+       |
+       v
+docker attach
+       |
+       v
+Inside container
+       |
+       v
+exit
+       |
+       v
+Container stops
+
+
+If we want to detach from the container while keeping it
+running, we can use:
+
+CTRL + P
+CTRL + Q
+
+
+This detaches from the container without stopping it.
+
+
+24. DOCKER STOP
+---------------
+
+docker stop is used to stop a running container.
+
+Command:
+
+docker stop <container_id>
+
+
+Example:
+
+docker stop fa671c640475
+
+
+After stopping:
+
+Running Container
+       |
+       v
+Stopped Container
+
+
+25. DOCKER START
+----------------
+
+If a container is stopped and we want to start the same
+container again:
+
+docker start <container_id>
+
+
+Example:
+
+docker start fa671c640475
+
+
+Remember:
+
+docker start does NOT create a new container.
+
+It starts the existing stopped container.
+
+
+26. DOCKER RM
+-------------
+
+docker rm is used to remove a container.
+
+Example:
+
+docker rm <container_id>
+
+
+Usually, a container needs to be stopped before removing it.
+
+Flow:
+
+Running Container
+       |
+       | docker stop
+       v
+Stopped Container
+       |
+       | docker rm
+       v
+Container Removed
+
+
+27. FORCE REMOVE CONTAINER
+---------------------------
+
+A running container can be forcefully removed using:
+
+docker rm -f <container_id>
+
+
+Example:
+
+docker rm -f fa671c640475
+
+
+But normally:
+
+docker stop <container_id>
+
+then:
+
+docker rm <container_id>
+
+
+28. DOCKER PS
+-------------
+
+docker ps
+
+Shows currently running containers.
+
+
+Example:
+
+docker ps
+
+
+It displays information such as:
+
+- Container ID
+- Image
+- Command
+- Status
+- Ports
+- Container name
+
+
+29. DOCKER PS -A
+---------------
+
+docker ps -a
+
+Shows all containers.
+
+It includes:
+
+- Running containers
+- Stopped containers
+
+
+Example:
+
+docker ps -a
+
+
+30. DOCKER IMAGES
+-----------------
+
+docker images
+
+Shows Docker images available locally.
+
+Example:
+
+docker images
+
+
+It displays:
+
+- Repository
+- Tag
+- Image ID
+- Created time
+- Size
+
+
+31. DOCKER IMAGE STORAGE
+------------------------
+
+After Docker build is completed, the filesystem layers
+are combined to form a Docker image.
+
+Example:
+
+Ubuntu layer
+     +
+Java layer
+     +
+Python layer
+     +
+Maven layer
+     |
+     v
+Docker Image
+myenv:v1
+
+
+32. DOCKER PUSH
+---------------
+
+docker push is used to upload a Docker image to a
+remote registry such as Docker Hub.
+
+Example:
+
+docker push myenv:v1
+
+
+Flow:
+
+Local Docker Image
+       |
+       | docker push
+       v
+Docker Hub
+
+
+33. DOCKER PULL
+---------------
+
+docker pull is used to download an image from a registry.
+
+Example:
+
+docker pull myenv:v1
+
+
+Flow:
+
+Docker Hub
+    |
+    | docker pull
+    v
+Docker Host
+    |
+    v
+Local Docker Image
+
+
+34. DOCKER RUN WITH REMOTE IMAGE
+---------------------------------
+
+If the required image is not available locally and we run:
+
+docker run myenv:v1
+
+Docker can obtain the image from a configured registry
+and then create and start the container.
+
+Conceptually:
+
+Docker run
+    |
+    v
+Check local image
+    |
+    +---- Image available ---> Create container
+    |
+    +---- Image unavailable
+                    |
+                    v
+              Pull image
+                    |
+                    v
+              Create container
+                    |
+                    v
+              Start container
+
+
+35. BASIC DOCKER WORKFLOW
+--------------------------
+
+Step 1:
+Install Docker on the machine.
+
+Step 2:
+Create a Dockerfile.
+
+Step 3:
+Specify the required environment and dependencies.
+
+Example:
+
+Ubuntu
+Java
+Python
+Maven
+
+Step 4:
+Build the Docker image.
+
+Command:
+
+docker build -t myenv:v1 .
+
+Step 5:
+Run the image.
+
+Command:
+
+docker run -it myenv:v1
+
+Step 6:
+A container is created and started.
+
+Step 7:
+If we want to share the image:
+
+docker push myenv:v1
+
+Step 8:
+Another developer can download it:
+
+docker pull myenv:v1
+
+Step 9:
+The developer can create a container:
+
+docker run -it myenv:v1
+
+
+36. COMPLETE FLOW
+-----------------
+
+                 DOCKERFILE
+                     |
+                     |
+               docker build
+                     |
+                     v
+                DOCKER IMAGE
+                 myenv:v1
+                     |
+             +-------+-------+
+             |               |
+        docker push      docker run
+             |               |
+             v               v
+        DOCKER HUB        CONTAINER
+             |
+         docker pull
+             |
+             v
+       DOCKER IMAGE
+             |
+        docker run
+             |
+             v
+       NEW CONTAINER
+
+
+37. IMPORTANT DOCKER COMMANDS
+------------------------------
+
+docker --version
+
+Shows the installed Docker version.
+
+
+docker ps
+
+Shows running containers.
+
+
+docker ps -a
+
+Shows all containers.
+
+
+docker images
+
+Shows locally available images.
+
+
+docker run -it centos
+
+Creates and starts a new CentOS container.
+
+
+docker start <container_id>
+
+Starts an existing stopped container.
+
+
+docker stop <container_id>
+
+Stops a running container.
+
+
+docker attach <container_id>
+
+Attaches terminal to a running container.
+
+
+docker rm <container_id>
+
+Removes a stopped container.
+
+
+docker rm -f <container_id>
+
+Forcefully removes a container.
+
+
+docker build -t myenv:v1 .
+
+Builds a Docker image from Dockerfile.
+
+
+docker push myenv:v1
+
+Pushes an image to a remote registry.
+
+
+docker pull myenv:v1
+
+Pulls an image from a remote registry.
+
+
+============================================================
+                 QUICK INTERVIEW REVISION
+============================================================
+
+Docker
+  ---> Containerization platform
+
+Docker Host
+  ---> Machine where Docker is installed
+
+Dockerfile
+  ---> Contains instructions to build an image
+
+Docker Image
+  ---> Template/package used to create containers
+
+Container
+  ---> Running isolated environment created from an image
+
+Docker Build
+  ---> Creates an image from Dockerfile
+
+Docker Run
+  ---> Creates and starts a NEW container
+
+Docker Start
+  ---> Starts an EXISTING stopped container
+
+Docker Stop
+  ---> Stops a running container
+
+Docker Attach
+  ---> Connects terminal to a running container
+
+Docker RM
+  ---> Removes a container
+
+Docker Images
+  ---> Shows local images
+
+Docker PS
+  ---> Shows running containers
+
+Docker PS -A
+  ---> Shows all containers
+
+Docker Push
+  ---> Uploads image to remote registry
+
+Docker Pull
+  ---> Downloads image from remote registry
+
+Docker Hub
+  ---> Cloud-based Docker image registry
+
+
+============================================================
+                ONE-LINE INTERVIEW ANSWER
+============================================================
+
+Docker is a containerization platform that packages an
+application along with its dependencies into a lightweight,
+isolated container, making application deployment and
+execution consistent across different environments.
+============================================================
 
 =================================================================================================================
 docker -v
