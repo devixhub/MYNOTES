@@ -1,3 +1,33 @@
 We implemented a CI pipeline using Jenkins where code is checked out from GitHub, built using Maven,
 analyzed using SonarQube, the JAR artifact is stored in Nexus,
 then a Docker image is created and scanned using Trivy, and finally the Docker image is pushed to AWS ECR.
+
+
+| Type           | Structure                                   | Where App Runs                  |
+| -------------- | ------------------------------------        | ------------------------------- |
+| **Normal PC**  | PC → App                                    | Directly on PC                  |
+| **Docker**     | PC → Container → App                        | Inside container                |
+| **Kubernetes** | PC → Service → Pod →multipleContainer App   | Inside container managed by Pod |
+
+1/In a traditional deployment,
+the application runs directly on the host operating system along with its required runtime and dependencies
+2/Docker is a containerization platform that packages an application along with its dependencies into a container,
+providing an isolated and consistent environment for running the application
+3/Kubernetes is a container orchestration platform used to
+deploy, manage, scale, network, and maintain containerized applications across a cluster
+
+WHAT IS THE DIFFERENCE BETWEEN DOCKER AND KUBERNETES?
+Docker is mainly used to containerize and package applications, 
+whereas Kubernetes is used to orchestrate and manage those containers, 
+including deployment, scaling, networking, and self-healing.
+
+WHY DO WE NEED KUBERNETES IF WE ALREADY HAVE DOCKER?
+Docker can run containers, but when we have many containers across multiple servers,
+managing them manually becomes difficult. Kubernetes automates deployment,
+scaling, networking, load balancing, and recovery of those containers.
+
+NORMAL      → RUN APPLICATION
+DOCKER      → PACKAGE & RUN APPLICATION
+KUBERNETES  → MANAGE MANY CONTAINERS
+
+WHY ARGO CD ? WHAT IS ARGO CD? ARGO-CD ARCHITACTURE ?

@@ -1,0 +1,152 @@
+EXPLAIN ARGO CD ARCHETITUTRE ?
+Argo CD follows the GitOps approach, where Git is the single source of truth. 
+The user makes changes only in Git, and those changes are used to deploy the
+desired application state to the Kubernetes cluster.we have two component of 
+argo cd one is application controller and another is repo server, The Repo Server gets the 
+configuration from Git, while the Application Controller compares the Git state 
+with the actual cluster state and reconciles any differences. If someone makes a 
+manual change directly in the Kubernetes cluster, it is not considered the source of truth; 
+Argo CD detects the difference and, when self-healing/synchronization is enabled, brings the cluster 
+back to the state defined in Git. So, in our GitOps model, deployment changes should come from the Git side, 
+not from manual cluster-side changes.
+1. USER CHANGES YAML IN GITHUB
+              ↓
+2. REPO SERVER GETS YAML FROM GITHUB
+              ↓
+3. APPLICATION CONTROLLER GETS THE DESIRED STATE
+              ↓
+4. APPLICATION CONTROLLER CHECKS KUBERNETES
+              ↓
+5. IT COMPARES GIT STATE WITH CLUSTER STATE
+              ↓
+6. IF BOTH ARE SAME → EVERYTHING IS OK
+              ↓
+7. IF THEY ARE DIFFERENT → ARGO CD DETECTS THE DIFFERENCE
+              ↓
+8. ARGO CD RECONCILES THE CLUSTER WITH GIT
+              ↓
+9. KUBERNETES RUNS THE DESIRED APPLICATION STATE
+
+What is Argo CD?
+It continuously checks the configuration stored in Git and 
+compares it with the actual state of the Kubernetes cluster.
+GIT = DESIRED STATE / SOURCE OF TRUTH
+KUBERNETES = ACTUAL STATE
+
+REPO SERVER ?
+The Repo Server connects to GitHub and gets the application configuration/YAML files.
+The Argo CD Repo Server is responsible for connecting to Git repositories, 
+retrieving application configuration, and generating or rendering Kubernetes manifests
+Repo Server
+     ↓
+CONNECTS TO GIT
+     ↓
+GETS APPLICATION CONFIGURATION
+
+APPLICATION CONTROLLER ?
+The Application Controller continuously monitors applications, 
+compares the desired state from Git with the actual state in Kubernetes, 
+and reconciles any differences.
+
+GIT = SOURCE OF TRUTH ?
+Git says what SHOULD BE RUNNING.
+Kubernetes shows what IS CURRENTLY RUNNING.
+
+What happens if someone changes Kubernetes manually?
+Git is the source of truth. A manual cluster change does not become the 
+desired state in Git. Argo CD detects the difference and, when reconciliation/self-healing is enabled, 
+restores the cluster to the Git-defined state.
+
+Git                 Kubernetes
+
+3 Pods              5 Pods
+Desired State       Actual State
+       \              /
+        \            /
+         DIFFERENCE
+
+
+COMPLETE WORKFLOW ?
+DEVELOPER
+    |
+    | Change YAML
+    v
+GITHUB
+    |
+    | Repository Configuration
+    v
+REPO SERVER
+    |
+    | Get / Render Manifests
+    v
+APPLICATION CONTROLLER
+    |
+    | Compare
+    |
+    +----------------------+
+    |                      |
+    v                      v
+DESIRED STATE          ACTUAL STATE
+    |                      |
+    | Git                  | Kubernetes
+    |                      |
+    +----------+-----------+
+               |
+               v
+          DIFFERENCE?
+               |
+          +----+----+
+          |         |
+         NO        YES
+          |         |
+          v         v
+       SYNCED    RECONCILE
+                    |
+                    v
+              KUBERNETES
+                    |
+                    v
+                  PODS
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
