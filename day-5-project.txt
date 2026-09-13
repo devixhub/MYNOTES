@@ -29,5 +29,258 @@ scaling, networking, load balancing, and recovery of those containers.
 NORMAL      → RUN APPLICATION
 DOCKER      → PACKAGE & RUN APPLICATION
 KUBERNETES  → MANAGE MANY CONTAINERS
+===========
+KUBERNETES                   
+|-- POD
+|-- SERVICE
+|-- REPLICA-SET
+|-- DEPLOYMENT
+|-- NAMESPACE
 
-WHY ARGO CD ? WHAT IS ARGO CD? ARGO-CD ARCHITACTURE ?
+CI-CD
+|-- CI-OUTPUT image tag
+|-- pod image tag
+--------------------------------------------
+KUBERNETES
+|
+|-- NAMESPACE
+|
+|-- DEPLOYMENT
+|     |
+|     |-- REPLICA-SET
+|            |
+|            |-- POD
+|
+|-- SERVICE
+      |
+      |-- Connects traffic to POD
+===========================================================================================
+WHY DO WE NEED KUBERNETES IF WE ALREADY HAVE DOCKER COMPOSE AND SWAP ?
+
+1/-The main reason is scale, AUTOMATION, RELIABILITY, AND LARGE PRODUCTION ENVIRONMENTS.
+Suppose your application has:           
+Student Service                 
+Course Service
+MySQL
+Problem:::::::::
+What happens when your application becomes bigger?
+10 Microservices
+100 Containers
+5 Servers
+Managing everything manually becomes difficult.
+  HOW DOCKER MANAGE::::::
+1/-Docker Compose helps us manage multiple containers together.
+For example:
+services:
+
+  student:
+    image: student-service:1.0
+
+  course:
+    image: course-service:1.0
+
+  mysql:
+    image: mysql
+	
+Then:
+docker compose up -d      -> It can start all these containers	
+
+2/-Docker Swarm
+Docker Swarm goes one step further.
+Instead of one server:
+
+SERVER-1
+SERVER-2
+SERVER-3
+Swarm can manage containers across multiple Docker hosts.
+
+Example:
+
+             SWARM
+               │
+      ┌────────┼────────┐
+      ↓        ↓        ↓
+   Node-1   Node-2   Node-3
+      │        │        │
+   Docker   Docker   Docker
+   Containers
+
+It provides things like:
+
+Service management
+Replicas
+Basic load balancing
+Scheduling
+High availability
+
+:::::::WHY KUBERNETES CAME:::::::
+
+The biggest problem is that large production environments became too complex 
+to manage with simpler container orchestration tools.
+Imagine:
+
+50 Microservices
+500 Containers
+20 Servers
+Multiple Environments
+
+Now you need:
+
+Auto Scaling
+Self Healing
+Load Balancing
+Rolling Updates
+Rollback
+Service Discovery
+Secrets
+Config Management
+Storage
+Monitoring
+Multi-node management
+
+Kubernetes provides a large ecosystem and strong automation around these requirements.
+	
+Docker is mainly used for containerization, while Docker Compose is useful for managing multiple containers, 
+especially in development and smaller environments. Docker Swarm also provides container orchestration. However, 
+as applications became more microservice-based and production environments became larger and more complex, 
+organizations needed stronger automation for scaling, self-healing, rolling updates, service discovery, storage, 
+security, and multi-node management
+===================================================================================================================
+::::::::::::::::::::::::::::::::::::::::::::::::KUBERNETES ARCHETITURE :::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+                 KUBERNETES CLUSTER
+                         │
+          ┌──────────────┴──────────────┐
+          │                             │
+     CONTROL PLANE                  DATA PLANE
+          │                             │
+          │                    ┌────────┴────────┐
+          │                    │                 │
+       API Server           Worker Node 1    Worker Node 2
+       Scheduler                │                 │
+       Controller               │                 │
+       Manager              Kubelet           Kubelet
+       ETCD                 Kube-proxy        Kube-proxy
+                             Container Runtime       Container Runtime
+                               ENVIRONMENT(CRE)           ENVIRONMENT(CRE)
+	
+When I run kubectl apply -f deployment.yaml, the request first goes to the Kubernetes API Server. The API Server checks the 
+request and stores the desired configuration in etcd.
+
+Then Kubernetes controllers look at the desired state and determine what resources need to be created. For example, 
+if I have a Deployment with 3 replicas, the Deployment creates or manages a ReplicaSet, and the ReplicaSet makes sure that 3 Pods 
+are required.
+
+The newly created Pods don't initially have a worker node. The Scheduler identifies these Pods and selects a suitable worker node
+based on available resources and scheduling rules.
+
+Once a Pod is assigned to a worker node, the Kubelet on that node notices the Pod assignment. Kubelet communicates with the 
+Container Runtime, such as containerd or CRI-O, and asks it to create and start the required container. 
+If the image is not already available on the node, the runtime pulls the image from the container registry.
+
+After the container starts successfully, my application starts running inside the Pod. If I have a Kubernetes Service, 
+it provides a stable way for users or other applications to reach the Pods.
+
+After everything is running, Kubernetes doesn't just stop. The controllers continuously compare the desired state with the 
+actual state. For example, if I requested 3 Pods and one Pod crashes, Kubernetes detects that only 2 are running and works to 
+create a replacement Pod. This is how Kubernetes provides self-healing and maintains the desired state.	
+	
+	kubectl → API Server → ETCD → Controller → Scheduler → Kubelet → Container Runtime → Pod → Application
+CONTROL PLANE = DECISION MAKING
+DATA PLANE    = APPLICATION RUNNING
+
+
+I SAY WHAT I WANT
+       ↓
+   kubectl apply
+       ↓
+   API SERVER
+       ↓
+  ETCD SAVES IT
+       ↓
+  CONTROLLER
+"What resources are needed?"
+       ↓
+   REPLICASET
+"We need 3 Pods"
+       ↓
+   SCHEDULER
+"Which Node should run them?"
+       ↓
+   WORKER NODE
+       ↓
+    KUBELET
+"I need to run this Pod"
+       ↓
+CONTAINER RUNTIME
+"Start the container"
+       ↓
+      POD
+       ↓
+   CONTAINER
+       ↓
+  APPLICATION	
+	
+kubectl          → I give the command
+API Server       → Receives the command
+ETCD             → Remembers the desired state
+Controller       → Decides what needs to be maintained
+Scheduler        → Chooses the worker node
+Kubelet          → Manages the Pod on that node
+Container Runtime→ Runs the container
+Pod              → Holds the application container
+Application      → Actually runs	
+REPLICA -> SAME TIME OF POD
+	
+ONE BY ONE BREAK-DOWN OF Kubernetes ARCHETITURE/////////////////////////////////////
+====================================================================================
+Control Plane 
+=============
+This is the first thing you should remember.
+Control Plane = Brain 
+The control plane decides:
+What should happen?
+Where should it happen?
+Is the cluster in the desired state?
+
+It contains:
+API Server  ->ITS GATE KEEPER WHO TAKE INFORMATION FROM ADMIN
+Scheduler   → IT RUN24/7 Chooses the worker node
+Controller Manager ->MAINTAIN THE POD STATE (REQUEST TO CREATE 5 POD IT WILL CREATE EXECT THAT NOT LESS & NOT MORE)
+ETCD  ->TAKE THE INFORMATION FROM API SERVER STORE THE DATA IN KEY VALUE PAIR
+
+Data Plane
+==========
+Workers 
+Worker nodes actually run the application.
+They contain:
+Kubelet   --> ITS CONNECT WITH API SERVER AND TAKE THE INFORMATION CREATE THE RESOURCES HELP OF CRE
+
+Kube-proxy  -->Kube-proxy handles Kubernetes Service networking. It helps route network traffic coming to a 
+Service toward the appropriate Pod.
+
+CRE (Container Runtime Environment)  -->CRE is responsible for actually creating, starting, and managing the 
+containers on the Worker Node
+
+
+
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	

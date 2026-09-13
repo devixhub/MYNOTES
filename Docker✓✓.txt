@@ -3,6 +3,102 @@ Day-1
 ============================================================
                     DOCKER NOTES
 ============================================================
+:::::::::::::::::::::::;::::::::::::::::::::::::::DOCKER Architecture:::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+First, we take a Linux server, for example an Ubuntu machine, and install Docker on it.
+Once Docker is installed, that complete machine is called the Docker Host.
+Inside the Docker Host, Docker mainly has two components:
+1/-Docker Server (Docker Daemon)
+The Docker Server is responsible for actually performing Docker operations such as creating containers, building images, 
+starting and stopping containers, etc. It also manages the local Docker images and containers.
+Docker Client (CLI)
+The Docker Client is where we execute Docker commands such as:
+docker build
+docker run
+docker create
+docker start
+docker stop
+docker push
+docker pull
+
+When we execute these commands through the Docker Client, the request goes to the Docker Server, 
+and the Docker Server performs the required operation.
+
+2. Docker Client 
+Now, inside the Docker Client side, we create a Dockerfile.
+The Dockerfile is a text file in which we specify what our application needs.
+
+For example we can specify: WE NEED
+Ubuntu
+Java
+Python
+Maven
+So the Dockerfile tells Docker->I need an Ubuntu environment, and inside that environment I need Java, Python and Maven."
+Docker Build
+
+3 DOCKER-BUILD
+After creating the Dockerfile, 
+we use the docker build command EXAMPLE :docker build -t myenv:v1 .
+The docker build command reads the instructions from the Dockerfile and starts creating the required environment.
+
+When we execute docker build, Docker reads the Dockerfile and executes the instructions step by step. 
+During the build, Docker creates a temporary container and performs the required operations inside it. 
+Each step creates a filesystem layer. After all the steps are completed, these layers are combined to form the final Docker image, 
+and the temporary container is removed.
+
+4.Docker Image
+The final result of docker build is a Docker Image.  example:myenv:v1
+myenv → image name
+v1    → image tag/version
+The image contains everything that we specified in our Dockerfile, such as:
+Layer 4 → Maven
+Layer 3 → Python
+Layer 2 → Java
+Layer 1 → Ubuntu
+
+5. Docker Run
+Once the image is available, we use: docker run myenv:v1 The purpose of docker run is to create and start 
+a container from the Docker image.
+
+DOCKER RUN IS USED TO CREATE AND START A CONTAINER FROM AN IMAGE. 
+WE CAN CREATE MULTIPLE CONTAINERS FROM THE SAME DOCKER IMAGE. THE IMAGE CAN BE THE SAME, 
+BUT EACH CONTAINER GETS A DIFFERENT CONTAINER ID
+For example:
+
+Docker Image: myenv:v1
+
+        |
+        | docker run  ->docker run myenv:v1
+        v
+
+   Container C1
+
+If we execute docker run again:
+myenv:v1
+   |
+   +----> C1
+   |
+   +----> C2
+   |
+   +----> C3
+
+The image remains the same, but every newly created container gets its own unique container ID.
+
+6. Docker Push
+Now suppose we have created our image: myenv:v1 and we want to share it with another developer.
+We use: docker push myenv:v1
+The purpose of docker push is:
+To upload/share a Docker image to a remote registry.
+The image is uploaded from our Docker Host to Docker Hub / remote registry.
+
+7. Docker Pull
+Now imagine another developer has another Docker Host.That developer needs the same image.
+They can use:docker pull username/myenv:v1
+After the image is downloaded, the developer can create a container from it:
+
+
+::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+
 1. WHAT IS DOCKER?
 ------------------
 

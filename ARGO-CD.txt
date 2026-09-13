@@ -9,6 +9,45 @@ manual change directly in the Kubernetes cluster, it is not considered the sourc
 Argo CD detects the difference and, when self-healing/synchronization is enabled, brings the cluster 
 back to the state defined in Git. So, in our GitOps model, deployment changes should come from the Git side, 
 not from manual cluster-side changes.
+=================================================================================================================
+===============================
+Architecture:
+===============================
+repo server => it will try to connect to the git and get the state of the git , you can say it is 
+micro-service in github application and that is talking to git and then there has to another
+micor-service that talk to kubernetes and get the state of that , in argo-cd we called it has 
+application Controller(it will talk to k8s and get the state of kubernetes).
+we need repo-server and application-controller to get the state between git and kubernetes .
+that why there is one micro-service which get the state from git and another micor-service which 
+get the state between kubernetes
+
+then both will compair
+      repo-server:state=application-controller:state then it will deploy
+this UI/CLI based solution , A user try to connect to argo-cd from UI/CLI , there is one 
+componet called api-server which is used by user to comuncate to argo-cd using the UI and CLI
+the api-server shoud handle the authentication in case of argo-cd has the capbilty of single 
+signon and has the capbilty to intigrating to the OIDC provider(external data base and all)
+  for this argo-cd comes with dex server
+-- Redis: it will use for caching
+      becuase of some resion application controler goes down and once its come up it the 
+      informationwhat has happened, application controler is state-full set and redis is used for 
+      caching the info.
+      Redis in Argo CD's architecture is used for caching, specifically to avoid repeatedly doing 
+      expensive work. A few concrete things it caches:
+
+===============================
+How to walk your class through it:
+
+UI / CLI - the student or engineer opens the dashboard or types an argocd command.
+API server - every request lands here first. It's the single entry point.
+Dex (left) handles login/authentication; Redis (right) caches results so repeated requests are fast. Both are helpers to the API server, not separate paths.
+Repo server - pulls the raw manifests from Git, processes any Helm/Kustomize templating, and renders final YAML.
+App controller - takes that rendered YAML, compares it to what's actually running in Kubernetes, and applies the difference.
+
+Key teaching point: the Repo server only talks to Git, and the App controller only talks to Kubernetes - each component has one job. That separation is what makes Argo CD reliable and easy to reason about.
+----
+
+=================================================================================================================
 1. USER CHANGES YAML IN GITHUB
               ↓
 2. REPO SERVER GETS YAML FROM GITHUB
@@ -28,10 +67,52 @@ not from manual cluster-side changes.
 9. KUBERNETES RUNS THE DESIRED APPLICATION STATE
 
 What is Argo CD?
+Argo CD is a GitOps continuous delivery tool for Kubernetes.
 It continuously checks the configuration stored in Git and 
 compares it with the actual state of the Kubernetes cluster.
 GIT = DESIRED STATE / SOURCE OF TRUTH
 KUBERNETES = ACTUAL STATE
+
+gitOps?
+GitOps is a methodology where Git is used as the single source of
+truth for the desired state of applications and infrastructure. 
+In our Kubernetes environment, developers make configuration changes in Git,
+and Argo CD automatically detects those changes and synchronizes the Kubernetes 
+cluster with the desired state defined in Git.
+
+
+
+GITOPS
+===================
+What is GITOPS
+==========================================================================================
+GITOPS uses Git as a single source of truth to deliver application and infrastructure
+
+its is not only for application deployment it is also used for infra deployment .
+we are trying to increse a resource in kubernetes and after 10days someone ask what is the
+changes in kubernetes then we donot have track
+
+if have 100 of kubernetes cluster and you 100 or 1000 of application to manage this gitops will
+help
+==========
+PRINCIPLES
+============
+Declarative
+versioned and Immutable
+pulled Automatically
+continuously reconciled
+---
+git have continuously reconciled your changes , lets say someone will go to kubernetes cluster
+and modified recourse diracatly in kubernetes cluster , github controler says no , i am not
+allowing this change becuase git is my single source of truth that means we want to make any
+change to the resource that i am managing , u have to get the change, 1st into a git repo and
+only then your change will deploy
+gitops is there to overwrite the chnages
+
+gitops Continuously watach for the kubernetes cluster that all the recouse of k8s and it will keep the track 
+of resources that means it store the chaces of all the recources of k8s , 
+github controlerhas read only access for all k8s cluster recourses , it gets info and it keep a cach
+=================================================================================================================
 
 REPO SERVER ?
 The Repo Server connects to GitHub and gets the application configuration/YAML files.
@@ -57,14 +138,9 @@ Git is the source of truth. A manual cluster change does not become the
 desired state in Git. Argo CD detects the difference and, when reconciliation/self-healing is enabled, 
 restores the cluster to the Git-defined state.
 
-Git                 Kubernetes
-
-3 Pods              5 Pods
-Desired State       Actual State
-       \              /
-        \            /
-         DIFFERENCE
-
+API Server in Argo CD?
+The API Server is the main entry point of Argo CD.
+Whenever a user interacts with Argo CD using the Web UI or CLI, the request first comes to the API Server.
 
 COMPLETE WORKFLOW ?
 DEVELOPER
@@ -107,6 +183,129 @@ DESIRED STATE          ACTUAL STATE
                     |
                     v
                   PODS
+
+What is Dex?
+Dex is used for authentication/login in Argo CD
+User
+  ↓
+Argo CD
+  ↓
+Dex
+  ↓
+Identity Provider
+
+What is Redis?
+Redis is the caching component of Argo CD used to store frequently accessed
+or computed information temporarily for faster access
+
+NOTE-
+Argo CD has multiple components. The UI or CLI is used by users to interact with Argo CD, 
+and all requests come through the API Server. Dex is used for authentication 
+and integration with external identity providers, while Redis is used as a cache. 
+The Repo Server connects to the Git repository, fetches and renders the application manifests. 
+The Application Controller compares the desired state from Git with the actual state in the Kubernetes cluster 
+and applies or reconciles the required changes. Git acts as the source of truth, and Kubernetes is maintained 
+according to the desired state defined in Git.
+--------
+workflow
+--------
+USER
+  ↓
+UI / CLI
+  ↓
+API SERVER
+    |
+    +----→ DEX   = AUTHENTICATION
+    |
+    +----→ REDIS = CACHE
+  ↓
+REPO SERVER
+  ↓
+GIT REPOSITORY
+  ↓
+YAML / DESIRED STATE
+  ↓
+APPLICATION CONTROLLER
+  ↓
+COMPARE WITH KUBERNETES
+  ↓
+KUBERNETES CLUSTER
+  ↓
+NODE
+  ↓
+POD
+  ↓
+APPLICATION
+-----------
+REPO SERVER
+→ GIT SIDE
+→ Fetches and renders manifests
+-------------------------------
+APPLICATION CONTROLLER
+→ CLUSTER SIDE
+→ Tracks cluster state
+→ Compares Git vs Cluster
+→ Maintains desired state
+-------------------------
+REDIS
+→ CACHE
+-------
+DEX
+→ AUTHENTICATION
+-----------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
