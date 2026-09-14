@@ -252,7 +252,72 @@ REDIS
 -------
 DEX
 → AUTHENTICATION
------------------
+----------------------------------------------------------------------------------------------------------------------
+day-1                          STEP-BY-STEP ARGOCD INSTALLTION PROCESS
+-----
+install agrocd
+-------------
+kubectl get pods -n argocd 
+kubectl create ns argocd -namespace created
+---
+https://argo-cd.readthedocs.io/en/stable/cli_installation/
+=>left side click on getting started
+---
+https://argo-cd.readthedocs.io/en/stable/getting_started/
+--------------------------------------
+step 1: kubectl create namespace argocd
+step 2:
+kubectl apply -n argocd --server-side --force-conflicts -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+
+---
+kubectl get ns argocd
+kubectl get svc -n argocd
+--
+need to check the UI part
+  =>kubectl edit svc argocd-server -n argocd
+  =>change the type:clusterIP to Nodeport/LoadBalancer 
+  
+difference between cluster ip , node port and load balancer ?
+ClusterIP provides internal-only access, whereas NodePort opens a static port on all nodes for external access.
+LoadBalancer provisions a cloud provider's external load balancer to automatically distribute traffic to the service.
+===============
+kubectl get secret -n argocd
+kubectl get secret argocd-initial-admin-secret -n argocd -o yaml
+
+use base64 decode in internet
+then decrypt the password
+----
+kubectl get ns
+kubectl create ns argocd
+kubectl get po -n argocd
+kubectl apply -n argocd --server-side --force-conflicts -f
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

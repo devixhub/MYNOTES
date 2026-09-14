@@ -261,16 +261,60 @@ Service toward the appropriate Pod.
 
 CRE (Container Runtime Environment)  -->CRE is responsible for actually creating, starting, and managing the 
 containers on the Worker Node
+===============================================================================================================
+In Kubernetes, you can create a Pod directly in two common ways:
+
+1. Ad-hoc method / Imperative command
+--------------------------------------
+You create the Pod directly using a command.
+Example: kubectl run nginx --image=nginx
+This tells Kubernetes:
+"Create a Pod named nginx using the nginx image."
+Check it: kubectl get pods
+When do we use it?
+Quick testing
+Learning
+Troubleshooting
+Temporary Pods
+
+2. YAML method / Declarative method
+------------------------------------
+Here we create a YAML file describing what we want.
+Example pod.yaml:
+
+apiVersion: v1        -->v1 → Core Kubernetes API ,Kubernetes, use the v1 API to understand this YAML
+kind: Pod             -->   This tells Kubernetes what type of resource we want to create.kind tells Kubernetes what we are creating eg. deployment , service , secrate
+metadata:            -->        metadata contains information that identifies the Kubernetes resource. eg name , labels
+  name: webserverpod1--> This gives the Pod its name.
+  labels:            --> Labels are key-value information attached to Kubernetes resources.They help Kubernetes identify and group resources.
+    env: dev         ---->This is the actual label.
+spec:                --> This is where we tell Kubernetes:"What exactly do I want this Pod to contain and how should it run?"
+  containers:        --> Inside this Pod, I want these containers.
+    - name: webservercontainer1     --> This gives the container a name.
+      image: nginx:latest          --> This tells the container runtime which container image to use.If the image isn't already available on the worker node, the container runtime can pull it from the configured container registry.
+--------------------------
 
 
+Then: kubectl apply -f pod.yaml
 
-
+This means: Kubernetes, make the cluster match what I have written in this YAML.
+-----------------------------------------------------------------------	
 	
++-----------------------+
+| NODE                  |
+|  +-----------------+  |
+|  | pod             |  |
+|  |  +-----------+  |  |
+|  |  | C1 [APP]  |  |  |
+|  |  +-----------+  |  |
+|  +-----------------+  |
++-----------------------+
 	
-	
-	
-	
-	
+why don't we direct access the pod ?
+We technically can access a Pod directly using its Pod IP, 
+but we normally don't do that because Pod IPs are temporary and can change when Pods are recreated.	
+Instead, we use a Kubernetes Service, which provides a stable IP or DNS name and forwards traffic to the available Pods. 
+This also allows us to distribute traffic across multiple Pods	
 	
 	
 	
