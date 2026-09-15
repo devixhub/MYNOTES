@@ -253,44 +253,1071 @@ REDIS
 DEX
 → AUTHENTICATION
 ----------------------------------------------------------------------------------------------------------------------
-day-1                          STEP-BY-STEP ARGOCD INSTALLTION PROCESS
------
-install agrocd
--------------
-kubectl get pods -n argocd 
-kubectl create ns argocd -namespace created
----
-https://argo-cd.readthedocs.io/en/stable/cli_installation/
-=>left side click on getting started
----
+day-1
+                          STEP-BY-STEP ARGOCD INSTALLTION PROCESS
+						  =======================================
+# DAY-1
+
+```text
+          STEP-BY-STEP ARGO CD INSTALLATION PROCESS
+          ==========================================
+```
+
+======================================================================
+
+## IMPORTANT
+
+======================================================================
+
+Before installing Argo CD, we need a Kubernetes cluster.
+
+I am using an Ubuntu Server running on AWS EC2.
+
+You can also use another cloud provider.
+
+For this practice, I am creating a SINGLE-NODE Kubernetes cluster
+on the Ubuntu EC2 instance.
+also add inbound ru;le to 30437.
+
+======================================================================
+
+## IMPORTANT - EC2 INSTANCE REQUIREMENT
+
+======================================================================
+
+The EC2 instance should have at least 2 GB RAM and storage 15gb .
+
+For Argo CD practice, choose the EC2 instance type carefully.
+
+If the instance has insufficient RAM, Kubernetes installation can fail.
+
+In my first attempt, kubeadm failed because the machine had only
+908 MB RAM available.
+
+======================================================================
+
+# STEP 1 - CREATE KUBERNETES SHELL SCRIPT
+
+======================================================================
+
+Create the shell script:
+
+vi k8setup.sh
+
+Explanation:
+This creates/opens the Kubernetes installation shell script.
+
+Give executable permission:
+
+chmod u+x k8setup.sh
+
+Explanation:
+This gives the current user permission to execute the shell script.
+
+Run the script:
+
+./k8setup.sh
+
+Explanation:
+This executes the complete Kubernetes installation process.
+
+======================================================================
+
+# KUBERNETES INSTALLATION SHELL SCRIPT
+
+======================================================================
+
+Copy the following into:
+
+k8setup.sh
+
+```bash
+#!/bin/bash
+
+set -e
+
+
+# =========================================================
+# 1. UPDATE UBUNTU
+# =========================================================
+
+# Update the Ubuntu package list
+sudo apt update
+
+# Upgrade installed packages
+sudo apt upgrade -y
+
+
+# =========================================================
+# 2. INSTALL CONTAINERD
+# =========================================================
+
+# Install containerd - Kubernetes container runtime
+sudo apt install -y containerd
+
+
+# =========================================================
+# 3. CONFIGURE CONTAINERD
+# =========================================================
+
+# Create containerd configuration directory
+sudo mkdir -p /etc/containerd
+
+# Generate default containerd configuration
+containerd config default | sudo tee /etc/containerd/config.toml > /dev/null
+
+# Configure containerd to use systemd cgroups
+sudo sed -i 's/SystemdCgroup = false/SystemdCgroup = true/' /etc/containerd/config.toml
+
+# Restart containerd after configuration
+sudo systemctl restart containerd
+
+# Enable containerd to start automatically after reboot
+sudo systemctl enable containerd
+
+
+# =========================================================
+# 4. DISABLE SWAP
+# =========================================================
+
+# Disable swap immediately
+sudo swapoff -a
+
+# Disable swap permanently after reboot
+sudo sed -i '/ swap / s/^/#/' /etc/fstab
+
+
+# =========================================================
+# 5. LOAD KUBERNETES KERNEL MODULES
+# =========================================================
+
+# Configure required kernel modules
+cat <<EOF | sudo tee /etc/modules-load.d/k8s.conf
+overlay
+br_netfilter
+EOF
+
+# Load overlay module
+sudo modprobe overlay
+
+# Load bridge networking module
+sudo modprobe br_netfilter
+
+
+# =========================================================
+# 6. CONFIGURE KUBERNETES NETWORKING
+# =========================================================
+
+# Enable Kubernetes network forwarding
+cat <<EOF | sudo tee /etc/sysctl.d/k8s.conf
+net.bridge.bridge-nf-call-iptables=1
+net.bridge.bridge-nf-call-ip6tables=1
+net.ipv4.ip_forward=1
+EOF
+
+# Apply networking configuration
+sudo sysctl --system
+
+
+# =========================================================
+# 7. INSTALL REQUIRED PACKAGES
+# =========================================================
+
+# Install packages required to access Kubernetes repository
+sudo apt install -y apt-transport-https ca-certificates curl gpg
+
+# Create Kubernetes repository key directory
+sudo mkdir -p -m 755 /etc/apt/keyrings
+
+
+# =========================================================
+# 8. ADD KUBERNETES REPOSITORY
+# =========================================================
+
+# Download Kubernetes repository signing key
+curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.34/deb/Release.key | \
+sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+
+# Add Kubernetes package repository
+echo "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.34/deb/ /" | \
+sudo tee /etc/apt/sources.list.d/kubernetes.list
+
+
+# =========================================================
+# 9. INSTALL KUBERNETES COMPONENTS
+# =========================================================
+
+# Refresh package list after adding Kubernetes repository
+sudo apt update
+
+# Install Kubernetes components
+sudo apt install -y kubelet kubeadm kubectl
+
+# Prevent automatic Kubernetes version changes
+sudo apt-mark hold kubelet kubeadm kubectl
+
+# Enable kubelet at system startup
+sudo systemctl enable kubelet
+
+
+# =========================================================
+# 10. INITIALIZE KUBERNETES CLUSTER
+# =========================================================
+
+# Create the Kubernetes control plane
+sudo kubeadm init --pod-network-cidr=192.168.0.0/16
+
+
+# =========================================================
+# 11. CONFIGURE KUBECTL
+# =========================================================
+
+# Create kubectl configuration directory
+mkdir -p $HOME/.kube
+
+# Copy Kubernetes admin configuration
+sudo cp /etc/kubernetes/admin.conf $HOME/.kube/config
+
+# Give current user ownership of kubectl configuration
+sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+
+# =========================================================
+# 12. INSTALL CALICO NETWORK
+# =========================================================
+
+# Install Calico Kubernetes networking
+kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/v3.30.3/manifests/calico.yaml
+
+
+# =========================================================
+# 13. ALLOW PODS ON CONTROL-PLANE
+# =========================================================
+
+# Remove control-plane taint for single-node cluster
+kubectl taint nodes --all node-role.kubernetes.io/control-plane- || true
+
+
+# =========================================================
+# 14. WAIT FOR KUBERNETES
+# =========================================================
+
+# Wait for Kubernetes components to start
+echo "Waiting for Kubernetes node to become Ready..."
+
+sleep 30
+
+
+# =========================================================
+# 15. CHECK KUBERNETES
+# =========================================================
+
+# Display Kubernetes nodes
+echo "===== KUBERNETES NODES ====="
+
+kubectl get nodes
+
+
+# Display all Kubernetes pods
+echo "===== KUBERNETES PODS ====="
+
+kubectl get pods -A
+
+
+# Display completion message
+echo ""
+
+echo "=========================================="
+
+echo " Kubernetes installation completed!"
+
+echo "=========================================="
+```
+
+======================================================================
+
+# STEP 2 - VERIFY KUBERNETES
+
+======================================================================
+
+After the script finishes, check the Kubernetes node:
+
+```bash
+kubectl get nodes
+```
+
+Explanation:
+This displays the Kubernetes nodes and their current status.
+
+Expected output:
+
+```text
+NAME         STATUS   ROLES           AGE   VERSION
+kubernetes   Ready    control-plane   ...   v1.34.11
+```
+
+The important value is:
+
+```text
+STATUS = Ready
+```
+
+If the node is `Ready`, Kubernetes is working correctly.
+
+Check all Kubernetes pods:
+
+```bash
+kubectl get pods -A
+```
+
+Explanation:
+This displays pods from all Kubernetes namespaces.
+
+The Kubernetes system pods and Calico pods should eventually become
+`Running`.
+
+======================================================================
+
+# IMPORTANT
+
+======================================================================
+
+Do NOT run the Kubernetes installation script again if Kubernetes
+has already been successfully installed.
+
+ Kubernetes installation is complete.
+
+The next step is to install Argo CD into this Kubernetes cluster.
+
+======================================================================
+
+# STEP 3 - INSTALL ARGO CD
+
+======================================================================
+
+Official Argo CD documentation:
+
 https://argo-cd.readthedocs.io/en/stable/getting_started/
---------------------------------------
-step 1: kubectl create namespace argocd
-step 2:
+
+---
+
+# STEP 3.1 - CREATE ARGO CD NAMESPACE
+
+Command:
+first cheak if argo cd avilable or not by using this command :kubectl get ns argocd
+```bash
+kubectl create namespace argocd
+```
+
+Explanation:
+This creates a separate Kubernetes namespace called `argocd`.
+cheak :kubectl get ns
+
+Argo CD components will be installed inside this namespace.
+
+---
+
+# STEP 3.2 - INSTALL ARGO CD
+
+---
+
+Command:
+
+```bash
 kubectl apply -n argocd --server-side --force-conflicts -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+```
+
+Explanation:
+
+This downloads the official Argo CD installation manifest and
+creates the required Argo CD resources inside the `argocd` namespace.
+
+`-n argocd`
+
+Means the resources will be created in the `argocd` namespace.
+
+`--server-side`
+
+Uses Kubernetes server-side apply to create/update the resources.
+
+`--force-conflicts`
+
+Allows server-side apply to resolve field ownership conflicts.
+
+---
+
+# STEP 3.3 - CHECK ARGO CD PODS
+
+---
+
+Command:
+
+```bash
+kubectl get pods -n argocd
+```
+
+Explanation:
+This displays all Argo CD pods running inside the `argocd` namespace.
+
+Initially, some pods may take time to start.
+
+Wait until the Argo CD pods show:
+
+```text
+STATUS = Running
+```
+
 
 ---
 kubectl get ns argocd
 kubectl get svc -n argocd
 --
 need to check the UI part
-  =>kubectl edit svc argocd-server -n argocd
-  =>change the type:clusterIP to Nodeport/LoadBalancer 
-  
+  =>kubectl edit svc argocd-server -n argocd  --> use command and then change
+  =>change the type:clusterIP to NodePort/LoadBalancer  --> i change NodePort
+note:----------------------------------------------------------------------------------------
+we have 3 type of service 
 difference between cluster ip , node port and load balancer ?
 ClusterIP provides internal-only access, whereas NodePort opens a static port on all nodes for external access.
 LoadBalancer provisions a cloud provider's external load balancer to automatically distribute traffic to the service.
-===============
+------------------------------------------------------------------------------------------------
+1. CHECK ARGO CD DEPLOYMENTS
+----------------------------
+
+kubectl get deploy -n argocd
+
+This command shows the Deployments running inside the
+argocd namespace.
+
+It is used to verify that the Argo CD components are running.
+
+
+2. CHECK ARGO CD SERVICES
+-------------------------
+
+kubectl get svc -n argocd
+
+You will see the Argo CD Service and its ports.
+
+In our setup:
+
+    80:31803/TCP
+    443:30437/TCP
+
+Here:
+
+    80    -> Argo CD HTTP service port
+    31803 -> HTTP NodePort
+
+    443   -> Argo CD HTTPS service port
+    30437 -> HTTPS NodePort
+
+We use NodePort 30437 to access the Argo CD UI.
+
+NOTE:
+If you see <pending> for EXTERNAL-IP while using
+LoadBalancer, don't worry for this lab.
+
+We are using NodePort 30437 to access Argo CD.
+
+So our Argo CD URL is:
+
+    https://YOUR-PUBLIC-IP:30437
+
+
+============================================================
+3. GO TO ARGO CD SECRET
+============================================================
+
+First check the Secrets:
+
 kubectl get secret -n argocd
+
+
+Then:
+
 kubectl get secret argocd-initial-admin-secret -n argocd -o yaml
 
-use base64 decode in internet
-then decrypt the password
-----
-kubectl get ns
-kubectl create ns argocd
-kubectl get po -n argocd
-kubectl apply -n argocd --server-side --force-conflicts -f
+
+After this command, we get the Argo CD admin password
+in Base64 encoded format.
+
+The password is stored inside the Kubernetes Secret.
+
+
+TO DECODE THE PASSWORD
+----------------------
+
+We can copy the encoded password and use a Base64 decoder.
+
+After decoding, we get the original password.
+
+
+OR
+
+
+We can directly decode the password on the server using:
+
+echo 'ENCODED-PASSWORD' | base64 -d
+
+Replace:
+
+    ENCODED-PASSWORD
+
+with the Base64 encoded password.
+
+This will display the original password.
+
+
+============================================================
+4. OPEN ARGO CD SERVER
+============================================================
+
+Go to the browser and open:
+
+https://YOUR-PUBLIC-IP:30437
+
+
+Login using:
+
+    Username : admin
+    Password : <decoded password>
+
+
+After successfully LOGIN TO ARGO CD,
+we move to the next step.
+
+
+============================================================
+5. CREATE GITHUB REPOSITORY
+============================================================
+
+Open GitHub.
+
+Create a new repository:
+
+    ARGOCD-PROJECT
+
+
+Inside this repository create:
+
+    project1
+
+
+Inside project1 create two files:
+
+    deploy.yaml
+    mysvc.yaml
+
+
+The structure will be:
+
+    ARGOCD-PROJECT
+    |
+    └── project1
+        |
+        ├── deploy.yaml
+        |
+        └── mysvc.yaml
+
+
+============================================================
+6. CREATE deploy.yaml
+============================================================
+
+Create the file:
+
+    deploy.yaml
+
+
+Add the following code:
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  annotations:
+    kubernetes.io/change-cause: "Initial release with nginx 1.19"
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+        environment: development
+    spec:
+      containers:
+      - name: nginx-container
+        #image: nginx:1.19
+        image: swadhinswain475/mydockerimage:v1
+
+
+IMPORTANT:
+
+    replicas: 3
+
+This means we want 3 Nginx Pods.
+
+
+============================================================
+7. CREATE mysvc.yaml
+============================================================
+
+Create another file:
+
+    mysvc.yaml
+
+
+Add the following code:
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: loadbal-service
+spec:
+  selector:
+    app: nginx
+  ports:
+    - protocol: TCP
+      port: 8085
+      targetPort: 80
+  type: NodePort
+
+
+Here:
+
+    port: 8085
+        -> Kubernetes Service port
+
+    targetPort: 80
+        -> Nginx container port
+
+    type: NodePort
+        -> Exposes the application through a NodePort
+
+
+In our current setup, the Service shows:
+
+    8085:32203/TCP
+
+
+Here:
+
+    8085  -> Service Port
+    32203 -> NodePort
+    80    -> Nginx container port
+
+
+============================================================
+8. CREATE APPLICATION IN ARGO CD
+============================================================
+
+Now go to the Argo CD UI.
+
+Click:
+
+    NEW APP
+
+
+Give:
+
+    Application Name = project1
+
+    Project Name = default
+
+    Sync Policy = Manual
+
+
+Then add your Git repository URL.
+
+Repository:
+
+    ARGOCD-PROJECT
+
+
+Branch / Revision:
+
+    main
+
+
+Path:
+
+    project1
+
+
+Cluster:
+
+    default / in-cluster
+
+
+Namespace:
+
+    default
+
+
+Then create the application.
+
+
+============================================================
+9. MANUAL SYNC
+============================================================
+
+Because we selected:
+
+    Sync Policy = Manual
+
+
+Argo CD will not automatically synchronize the application.
+
+The application will initially show:
+
+    OutOfSync
+
+
+This means the configuration in Git and Kubernetes
+needs to be synchronized.
+
+Now click:
+
+    SYNC
+
+Then:
+
+    SYNCHRONIZE
+
+
+Argo CD will take the YAML files from GitHub and apply
+them to Kubernetes.
+
+
+After synchronization, wait until everything becomes:
+
+    Healthy
+    Synced
+
+
+After seeing everything Healthy in Argo CD UI,
+we move to the next step.
+
+
+============================================================
+10. CHANGE REPLICA DIRECTLY IN KUBERNETES
+============================================================
+
+Now we are going to make a change directly in Kubernetes.
+
+Run:
+
+kubectl edit deploy nginx-deployment
+
+
+Find:
+
+    replicas: 3
+
+
+Change it to:
+
+    replicas: 4
+
+
+Save and exit.
+
+
+Now verify:
+
+kubectl get deploy -n default
+
+
+It should show:
+
+    nginx-deployment   4/4
+
+
+This means Kubernetes now has 4 replicas.
+
+
+But in GitHub, deploy.yaml still has:
+
+    replicas: 3
+
+
+============================================================
+11. CHECK ARGO CD
+============================================================
+
+Now go to the Argo CD UI.
+
+Argo CD will detect that Kubernetes has a different
+configuration from Git.
+
+GitHub:
+
+    replicas: 3
+
+
+Kubernetes:
+
+    replicas: 4
+
+
+Therefore Argo CD will show:
+
+    OutOfSync
+
+
+Now click:
+
+    SYNC
+
+Then:
+
+    SYNCHRONIZE
+
+
+Argo CD will apply the configuration from GitHub.
+
+
+============================================================
+12. VERIFY AGAIN IN KUBERNETES
+============================================================
+
+Come back to the Kubernetes server.
+
+Run:
+
+kubectl get deploy -n default
+
+
+Now it will show:
+
+    nginx-deployment   3/3
+
+
+Previously we changed:
+
+    3 -> 4
+
+
+But after Argo CD synchronization:
+
+    4 -> 3
+
+
+Why?
+
+Because GitHub still contains:
+
+    replicas: 3
+
+
+Hence we proved:
+
+    GIT IS THE SINGLE SOURCE OF TRUTH.
+
+
+============================================================
+13. NOW CHANGE REPLICA THROUGH GITHUB
+============================================================
+
+Now we will make the change in the correct GitOps way.
+
+Go to GitHub.
+
+Open:
+
+    project1/deploy.yaml
+
+
+Currently:
+
+    replicas: 3
+
+
+Change it to:
+
+    replicas: 5
+
+
+Then commit the change to:
+
+    main
+
+
+============================================================
+14. SYNC AGAIN IN ARGO CD
+============================================================
+
+Go to the Argo CD UI.
+
+Argo CD will detect the change in GitHub.
+
+Because we selected:
+
+    Sync Policy = Manual
+
+
+We need to manually synchronize.
+
+Click:
+
+    SYNC
+
+Then:
+
+    SYNCHRONIZE
+
+
+Argo CD will apply the new configuration from GitHub.
+
+
+============================================================
+15. VERIFY IN KUBERNETES
+============================================================
+
+Come back to the Kubernetes server.
+
+Run:
+
+kubectl get deploy -n default
+
+
+Now it will show:
+
+    nginx-deployment   5/5
+
+
+This means Kubernetes now has:
+
+    5 replicas
+
+
+We can also check the Pods:
+
+kubectl get pods -n default
+
+
+Now we should see 5 Nginx Pods.
+
+
+============================================================
+16. WHAT DID WE PROVE?
+============================================================
+
+FIRST:
+
+We changed Kubernetes directly:
+
+    replicas: 3
+          ↓
+    replicas: 4
+
+
+Argo CD detected the difference:
+
+    OutOfSync
+
+
+After synchronization:
+
+    Kubernetes = 3
+
+
+because GitHub still contained:
+
+    replicas: 3
+
+
+Therefore:
+
+    GIT = SINGLE SOURCE OF TRUTH
+
+
+SECOND:
+
+We changed GitHub:
+
+    replicas: 3
+          ↓
+    replicas: 5
+
+
+Then we synchronized Argo CD.
+
+Kubernetes became:
+
+    replicas: 5
+
+
+Therefore the correct GitOps flow is:
+
+    GITHUB
+       |
+       v
+    ARGO CD
+       |
+       v
+    KUBERNETES
+
+
+GitHub contains the desired configuration.
+
+Argo CD compares the desired state in Git
+with the actual state in Kubernetes.
+
+If both are different:
+
+    OutOfSync
+
+
+After synchronization:
+
+    Kubernetes matches the configuration
+    stored in Git. .
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
