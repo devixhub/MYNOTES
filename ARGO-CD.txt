@@ -1,291 +1,397 @@
-EXPLAIN ARGO CD ARCHETITUTRE ?
-Argo CD follows the GitOps approach, where Git is the single source of truth. 
+============================================================
+                    ARGO CD NOTES
+============================================================
+
+WHAT IS ARGO CD ARCHITECTURE?
+-----------------------------
+
+Argo CD follows the GitOps approach, where Git is the single source of truth.
+
 The user makes changes only in Git, and those changes are used to deploy the
-desired application state to the Kubernetes cluster.we have two component of 
-argo cd one is application controller and another is repo server, The Repo Server gets the 
-configuration from Git, while the Application Controller compares the Git state 
-with the actual cluster state and reconciles any differences. If someone makes a 
-manual change directly in the Kubernetes cluster, it is not considered the source of truth; 
-Argo CD detects the difference and, when self-healing/synchronization is enabled, brings the cluster 
-back to the state defined in Git. So, in our GitOps model, deployment changes should come from the Git side, 
+desired application state to the Kubernetes cluster.
+
+We have two main components of Argo CD:
+1. Application Controller
+2. Repo Server
+
+Repo Server gets the configuration from Git, while Application Controller
+compares the Git state with the actual cluster state and reconciles differences.
+
+If someone makes a manual change directly in the Kubernetes cluster, it is not
+considered the source of truth.
+
+Argo CD detects the difference and, when self-healing/synchronization is enabled,
+brings the cluster back to the state defined in Git.
+
+In our GitOps model, deployment changes should come from the Git side,
 not from manual cluster-side changes.
-=================================================================================================================
-===============================
-Architecture:
-===============================
-repo server => it will try to connect to the git and get the state of the git , you can say it is 
-micro-service in github application and that is talking to git and then there has to another
-micor-service that talk to kubernetes and get the state of that , in argo-cd we called it has 
-application Controller(it will talk to k8s and get the state of kubernetes).
-we need repo-server and application-controller to get the state between git and kubernetes .
-that why there is one micro-service which get the state from git and another micor-service which 
-get the state between kubernetes
 
-then both will compair
-      repo-server:state=application-controller:state then it will deploy
-this UI/CLI based solution , A user try to connect to argo-cd from UI/CLI , there is one 
-componet called api-server which is used by user to comuncate to argo-cd using the UI and CLI
-the api-server shoud handle the authentication in case of argo-cd has the capbilty of single 
-signon and has the capbilty to intigrating to the OIDC provider(external data base and all)
-  for this argo-cd comes with dex server
--- Redis: it will use for caching
-      becuase of some resion application controler goes down and once its come up it the 
-      informationwhat has happened, application controler is state-full set and redis is used for 
-      caching the info.
-      Redis in Argo CD's architecture is used for caching, specifically to avoid repeatedly doing 
-      expensive work. A few concrete things it caches:
 
-===============================
-How to walk your class through it:
+ARCHITECTURE
+------------
 
-UI / CLI - the student or engineer opens the dashboard or types an argocd command.
-API server - every request lands here first. It's the single entry point.
-Dex (left) handles login/authentication; Redis (right) caches results so repeated requests are fast. Both are helpers to the API server, not separate paths.
-Repo server - pulls the raw manifests from Git, processes any Helm/Kustomize templating, and renders final YAML.
-App controller - takes that rendered YAML, compares it to what's actually running in Kubernetes, and applies the difference.
+Repo Server:
+It connects to Git and gets the state/configuration from Git.
 
-Key teaching point: the Repo server only talks to Git, and the App controller only talks to Kubernetes - each component has one job. That separation is what makes Argo CD reliable and easy to reason about.
-----
+You can consider it as a microservice that talks to Git.
 
-=================================================================================================================
-1. USER CHANGES YAML IN GITHUB
-              ↓
-2. REPO SERVER GETS YAML FROM GITHUB
-              ↓
-3. APPLICATION CONTROLLER GETS THE DESIRED STATE
-              ↓
-4. APPLICATION CONTROLLER CHECKS KUBERNETES
-              ↓
-5. IT COMPARES GIT STATE WITH CLUSTER STATE
-              ↓
-6. IF BOTH ARE SAME → EVERYTHING IS OK
-              ↓
-7. IF THEY ARE DIFFERENT → ARGO CD DETECTS THE DIFFERENCE
-              ↓
-8. ARGO CD RECONCILES THE CLUSTER WITH GIT
-              ↓
-9. KUBERNETES RUNS THE DESIRED APPLICATION STATE
+Application Controller:
+It talks to Kubernetes and gets the state of Kubernetes.
 
-What is Argo CD?
+We need Repo Server and Application Controller to get the state between
+Git and Kubernetes.
+
+One microservice gets the state from Git, and another microservice gets
+the state from Kubernetes.
+
+Then both states are compared.
+
+Repo Server State = Application Controller State
+                  ↓
+            If required, deploy/reconcile
+
+
+UI / CLI
+--------
+
+Argo CD is a UI/CLI-based solution.
+
+A user tries to connect to Argo CD using the UI or CLI.
+
+There is a component called API Server, which is used by the user to
+communicate with Argo CD through UI and CLI.
+
+API Server handles authentication.
+
+Argo CD also supports Single Sign-On and integration with OIDC providers
+and external identity systems.
+
+For this, Argo CD comes with Dex Server.
+
+
+REDIS
+-----
+
+Redis is used for caching.
+
+If the Application Controller goes down and later comes back up,
+Redis helps with cached information/state.
+
+Redis is used to avoid repeatedly doing expensive work.
+
+Concrete things it caches can include frequently accessed or
+computed information.
+
+
+HOW TO WALK THROUGH ARGO CD ARCHITECTURE
+----------------------------------------
+
+1. UI / CLI
+   The student or engineer opens the dashboard or types an Argo CD command.
+
+2. API Server
+   Every request lands here first.
+   It is the main entry point.
+
+3. Dex
+   Handles login/authentication.
+
+4. Redis
+   Caches information so repeated requests are faster.
+
+5. Repo Server
+   Pulls raw manifests from Git.
+   Processes Helm/Kustomize templating.
+   Renders the final YAML.
+
+6. Application Controller
+   Takes the rendered YAML, compares it with what is actually running
+   in Kubernetes, and applies the difference.
+
+KEY TEACHING POINT:
+The Repo Server mainly talks to Git, and the Application Controller
+talks to Kubernetes. Each component has its own responsibility.
+
+
+END-TO-END FLOW
+---------------
+
+1. User changes YAML in GitHub
+2. Repo Server gets YAML from GitHub
+3. Application Controller gets the desired state
+4. Application Controller checks Kubernetes
+5. It compares Git state with cluster state
+6. If both are the same → Everything is OK
+7. If they are different → Argo CD detects the difference
+8. Argo CD reconciles the cluster with Git
+9. Kubernetes runs the desired application state
+
+
+WHAT IS ARGO CD?
+----------------
+
 Argo CD is a GitOps continuous delivery tool for Kubernetes.
-It continuously checks the configuration stored in Git and 
-compares it with the actual state of the Kubernetes cluster.
-GIT = DESIRED STATE / SOURCE OF TRUTH
-KUBERNETES = ACTUAL STATE
 
-gitOps?
-GitOps is a methodology where Git is used as the single source of
-truth for the desired state of applications and infrastructure. 
+It continuously checks the configuration stored in Git and compares it
+with the actual state of the Kubernetes cluster.
+
+Git = Desired State / Source of Truth
+Kubernetes = Actual State
+
+
+WHAT IS GITOPS?
+---------------
+
+GitOps is a methodology where Git is used as the single source of truth
+for the desired state of applications and infrastructure.
+
 In our Kubernetes environment, developers make configuration changes in Git,
-and Argo CD automatically detects those changes and synchronizes the Kubernetes 
-cluster with the desired state defined in Git.
-
+and Argo CD automatically detects those changes and synchronizes the
+Kubernetes cluster with the desired state defined in Git.
 
 
 GITOPS
-===================
-What is GITOPS
-==========================================================================================
-GITOPS uses Git as a single source of truth to deliver application and infrastructure
+------
 
-its is not only for application deployment it is also used for infra deployment .
-we are trying to increse a resource in kubernetes and after 10days someone ask what is the
-changes in kubernetes then we donot have track
+WHAT IS GITOPS?
+GitOps uses Git as a single source of truth to deliver application
+and infrastructure.
 
-if have 100 of kubernetes cluster and you 100 or 1000 of application to manage this gitops will
-help
-==========
-PRINCIPLES
-============
-Declarative
-versioned and Immutable
-pulled Automatically
-continuously reconciled
----
-git have continuously reconciled your changes , lets say someone will go to kubernetes cluster
-and modified recourse diracatly in kubernetes cluster , github controler says no , i am not
-allowing this change becuase git is my single source of truth that means we want to make any
-change to the resource that i am managing , u have to get the change, 1st into a git repo and
-only then your change will deploy
-gitops is there to overwrite the chnages
+It is not only for application deployment.
+It is also used for infrastructure deployment.
 
-gitops Continuously watach for the kubernetes cluster that all the recouse of k8s and it will keep the track 
-of resources that means it store the chaces of all the recources of k8s , 
-github controlerhas read only access for all k8s cluster recourses , it gets info and it keep a cach
-=================================================================================================================
+Example:
+If we increase a resource in Kubernetes and after 10 days someone asks
+what changes were made in Kubernetes, without GitOps we may not have
+a proper track of those changes.
 
-REPO SERVER ?
-The Repo Server connects to GitHub and gets the application configuration/YAML files.
-The Argo CD Repo Server is responsible for connecting to Git repositories, 
-retrieving application configuration, and generating or rendering Kubernetes manifests
+If we have hundreds of Kubernetes clusters and hundreds or thousands
+of applications to manage, GitOps helps us manage them consistently.
+
+
+GITOPS PRINCIPLES
+-----------------
+
+1. Declarative
+2. Versioned and Immutable
+3. Pulled Automatically
+4. Continuously Reconciled
+
+
+CONTINUOUS RECONCILIATION
+-------------------------
+
+Git continuously tracks the desired changes.
+
+Suppose someone goes directly to the Kubernetes cluster and modifies
+a resource.
+
+GitOps says that Git is the single source of truth.
+
+To make a change to a resource managed by GitOps, the change should first
+be made in the Git repository and then deployed.
+
+GitOps is there to overwrite/reconcile unwanted cluster-side changes.
+
+GitOps continuously watches the Kubernetes cluster and keeps track
+of Kubernetes resources.
+
+The controller gets information about Kubernetes resources and keeps
+a cache of that information.
+
+
+REPO SERVER
+-----------
+
+The Repo Server connects to GitHub and gets the application
+configuration/YAML files.
+
+The Argo CD Repo Server is responsible for:
+- Connecting to Git repositories
+- Retrieving application configuration
+- Generating/rendering Kubernetes manifests
+
+Flow:
+
 Repo Server
-     ↓
-CONNECTS TO GIT
-     ↓
-GETS APPLICATION CONFIGURATION
+    ↓
+Connects to Git
+    ↓
+Gets Application Configuration
 
-APPLICATION CONTROLLER ?
-The Application Controller continuously monitors applications, 
-compares the desired state from Git with the actual state in Kubernetes, 
+
+APPLICATION CONTROLLER
+----------------------
+
+The Application Controller continuously monitors applications,
+compares the desired state from Git with the actual state in Kubernetes,
 and reconciles any differences.
 
-GIT = SOURCE OF TRUTH ?
+
+GIT = SOURCE OF TRUTH
+---------------------
+
 Git says what SHOULD BE RUNNING.
+
 Kubernetes shows what IS CURRENTLY RUNNING.
 
-What happens if someone changes Kubernetes manually?
-Git is the source of truth. A manual cluster change does not become the 
-desired state in Git. Argo CD detects the difference and, when reconciliation/self-healing is enabled, 
-restores the cluster to the Git-defined state.
 
-API Server in Argo CD?
+WHAT HAPPENS IF SOMEONE CHANGES KUBERNETES MANUALLY?
+----------------------------------------------------
+
+Git is the source of truth.
+
+A manual cluster change does not become the desired state in Git.
+
+Argo CD detects the difference and, when reconciliation/self-healing
+is enabled, restores the cluster to the Git-defined state.
+
+
+API SERVER IN ARGO CD
+---------------------
+
 The API Server is the main entry point of Argo CD.
-Whenever a user interacts with Argo CD using the Web UI or CLI, the request first comes to the API Server.
 
-COMPLETE WORKFLOW ?
-DEVELOPER
-    |
-    | Change YAML
-    v
-GITHUB
-    |
-    | Repository Configuration
-    v
-REPO SERVER
-    |
-    | Get / Render Manifests
-    v
-APPLICATION CONTROLLER
-    |
-    | Compare
-    |
-    +----------------------+
-    |                      |
-    v                      v
-DESIRED STATE          ACTUAL STATE
-    |                      |
-    | Git                  | Kubernetes
-    |                      |
-    +----------+-----------+
-               |
-               v
-          DIFFERENCE?
-               |
-          +----+----+
-          |         |
-         NO        YES
-          |         |
-          v         v
-       SYNCED    RECONCILE
-                    |
-                    v
-              KUBERNETES
-                    |
-                    v
-                  PODS
+Whenever a user interacts with Argo CD using the Web UI or CLI,
+the request first comes to the API Server.
 
-What is Dex?
-Dex is used for authentication/login in Argo CD
+
+COMPLETE WORKFLOW
+-----------------
+
+Developer
+   ↓
+Change YAML
+   ↓
+GitHub
+   ↓
+Repository Configuration
+   ↓
+Repo Server
+   ↓
+Get / Render Manifests
+   ↓
+Application Controller
+   ↓
+Compare
+
+Desired State = Git
+Actual State   = Kubernetes
+
+If there is NO difference:
+    Synced
+
+If there IS a difference:
+    Reconcile
+
+Then:
+Kubernetes
+   ↓
+Pods
+   ↓
+Application
+
+
+WHAT IS DEX?
+------------
+
+Dex is used for authentication/login in Argo CD.
+
+Flow:
+
 User
-  ↓
+ ↓
 Argo CD
-  ↓
+ ↓
 Dex
-  ↓
+ ↓
 Identity Provider
 
-What is Redis?
-Redis is the caching component of Argo CD used to store frequently accessed
-or computed information temporarily for faster access
 
-NOTE-
-Argo CD has multiple components. The UI or CLI is used by users to interact with Argo CD, 
-and all requests come through the API Server. Dex is used for authentication 
-and integration with external identity providers, while Redis is used as a cache. 
-The Repo Server connects to the Git repository, fetches and renders the application manifests. 
-The Application Controller compares the desired state from Git with the actual state in the Kubernetes cluster 
-and applies or reconciles the required changes. Git acts as the source of truth, and Kubernetes is maintained 
-according to the desired state defined in Git.
---------
-workflow
---------
-USER
-  ↓
+WHAT IS REDIS?
+--------------
+
+Redis is the caching component of Argo CD.
+
+It stores frequently accessed or computed information temporarily
+for faster access.
+
+
+ARGO CD COMPONENTS - QUICK REVISION
+-----------------------------------
+
 UI / CLI
-  ↓
-API SERVER
-    |
-    +----→ DEX   = AUTHENTICATION
-    |
-    +----→ REDIS = CACHE
-  ↓
-REPO SERVER
-  ↓
-GIT REPOSITORY
-  ↓
-YAML / DESIRED STATE
-  ↓
-APPLICATION CONTROLLER
-  ↓
-COMPARE WITH KUBERNETES
-  ↓
-KUBERNETES CLUSTER
-  ↓
-NODE
-  ↓
-POD
-  ↓
-APPLICATION
------------
-REPO SERVER
-→ GIT SIDE
+→ Used by users to interact with Argo CD
+
+API Server
+→ Main entry point for user requests
+
+Dex
+→ Authentication and integration with external identity providers
+
+Redis
+→ Cache
+
+Repo Server
+→ Connects to Git, fetches and renders manifests
+
+Application Controller
+→ Compares Git desired state with Kubernetes actual state
+→ Applies/reconciles required changes
+
+Git
+→ Source of truth
+
+Kubernetes
+→ Actual running state
+
+
+IMPORTANT DIFFERENCE
+--------------------
+
+Repo Server
+→ Git side
 → Fetches and renders manifests
--------------------------------
-APPLICATION CONTROLLER
-→ CLUSTER SIDE
+
+Application Controller
+→ Cluster side
 → Tracks cluster state
 → Compares Git vs Cluster
 → Maintains desired state
--------------------------
-REDIS
-→ CACHE
--------
-DEX
-→ AUTHENTICATION
-----------------------------------------------------------------------------------------------------------------------
-day-1
-                          STEP-BY-STEP ARGOCD INSTALLTION PROCESS
-						  =======================================
-# DAY-1
 
-```text
-          STEP-BY-STEP ARGO CD INSTALLATION PROCESS
-          ==========================================
-```
+Redis
+→ Cache
 
-======================================================================
+Dex
+→ Authentication
 
-## IMPORTANT
 
-======================================================================
+============================================================
+             DAY-1 ARGO CD INSTALLATION
+============================================================
+
+STEP-BY-STEP ARGO CD INSTALLATION PROCESS
+------------------------------------------
+
+IMPORTANT
+---------
 
 Before installing Argo CD, we need a Kubernetes cluster.
 
 I am using an Ubuntu Server running on AWS EC2.
 
-You can also use another cloud provider.
+We can also use another cloud provider.
 
 For this practice, I am creating a SINGLE-NODE Kubernetes cluster
 on the Ubuntu EC2 instance.
-also add inbound ru;le to 30437.
 
-======================================================================
+Also add an inbound rule for port 30437.
 
-## IMPORTANT - EC2 INSTANCE REQUIREMENT
 
-======================================================================
+EC2 INSTANCE REQUIREMENT
+------------------------
 
-The EC2 instance should have at least 2 GB RAM and storage 15gb .
+The EC2 instance should have at least 2 GB RAM and 15 GB storage.
 
 For Argo CD practice, choose the EC2 instance type carefully.
 
@@ -294,11 +400,9 @@ If the instance has insufficient RAM, Kubernetes installation can fail.
 In my first attempt, kubeadm failed because the machine had only
 908 MB RAM available.
 
-======================================================================
 
-# STEP 1 - CREATE KUBERNETES SHELL SCRIPT
-
-======================================================================
+STEP 1 - CREATE KUBERNETES SHELL SCRIPT
+---------------------------------------
 
 Create the shell script:
 
@@ -321,375 +425,286 @@ Run the script:
 Explanation:
 This executes the complete Kubernetes installation process.
 
-======================================================================
 
-# KUBERNETES INSTALLATION SHELL SCRIPT
-
-======================================================================
+KUBERNETES INSTALLATION SHELL SCRIPT
+-------------------------------------
 
 Copy the following into:
 
 k8setup.sh
 
-```bash
 #!/bin/bash
 
 set -e
 
-
-# =========================================================
 # 1. UPDATE UBUNTU
-# =========================================================
 
-# Update the Ubuntu package list
 sudo apt update
-
-# Upgrade installed packages
 sudo apt upgrade -y
 
-
-# =========================================================
 # 2. INSTALL CONTAINERD
-# =========================================================
 
-# Install containerd - Kubernetes container runtime
 sudo apt install -y containerd
 
-
-# =========================================================
 # 3. CONFIGURE CONTAINERD
-# =========================================================
 
-# Create containerd configuration directory
 sudo mkdir -p /etc/containerd
 
-# Generate default containerd configuration
 containerd config default | sudo tee /etc/containerd/config.toml > /dev/null
 
-# Configure containerd to use systemd cgroups
 sudo sed -i 's/SystemdCgroup = false/SystemdCgroup = true/' /etc/containerd/config.toml
 
-# Restart containerd after configuration
 sudo systemctl restart containerd
-
-# Enable containerd to start automatically after reboot
 sudo systemctl enable containerd
 
-
-# =========================================================
 # 4. DISABLE SWAP
-# =========================================================
 
-# Disable swap immediately
 sudo swapoff -a
-
-# Disable swap permanently after reboot
 sudo sed -i '/ swap / s/^/#/' /etc/fstab
 
-
-# =========================================================
 # 5. LOAD KUBERNETES KERNEL MODULES
-# =========================================================
 
-# Configure required kernel modules
 cat <<EOF | sudo tee /etc/modules-load.d/k8s.conf
 overlay
 br_netfilter
 EOF
 
-# Load overlay module
 sudo modprobe overlay
-
-# Load bridge networking module
 sudo modprobe br_netfilter
 
-
-# =========================================================
 # 6. CONFIGURE KUBERNETES NETWORKING
-# =========================================================
 
-# Enable Kubernetes network forwarding
 cat <<EOF | sudo tee /etc/sysctl.d/k8s.conf
 net.bridge.bridge-nf-call-iptables=1
 net.bridge.bridge-nf-call-ip6tables=1
 net.ipv4.ip_forward=1
 EOF
 
-# Apply networking configuration
 sudo sysctl --system
 
-
-# =========================================================
 # 7. INSTALL REQUIRED PACKAGES
-# =========================================================
 
-# Install packages required to access Kubernetes repository
 sudo apt install -y apt-transport-https ca-certificates curl gpg
 
-# Create Kubernetes repository key directory
 sudo mkdir -p -m 755 /etc/apt/keyrings
 
-
-# =========================================================
 # 8. ADD KUBERNETES REPOSITORY
-# =========================================================
 
-# Download Kubernetes repository signing key
 curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.34/deb/Release.key | \
 sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
 
-# Add Kubernetes package repository
 echo "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.34/deb/ /" | \
 sudo tee /etc/apt/sources.list.d/kubernetes.list
 
-
-# =========================================================
 # 9. INSTALL KUBERNETES COMPONENTS
-# =========================================================
 
-# Refresh package list after adding Kubernetes repository
 sudo apt update
 
-# Install Kubernetes components
 sudo apt install -y kubelet kubeadm kubectl
 
-# Prevent automatic Kubernetes version changes
 sudo apt-mark hold kubelet kubeadm kubectl
 
-# Enable kubelet at system startup
 sudo systemctl enable kubelet
 
-
-# =========================================================
 # 10. INITIALIZE KUBERNETES CLUSTER
-# =========================================================
 
-# Create the Kubernetes control plane
 sudo kubeadm init --pod-network-cidr=192.168.0.0/16
 
-
-# =========================================================
 # 11. CONFIGURE KUBECTL
-# =========================================================
 
-# Create kubectl configuration directory
 mkdir -p $HOME/.kube
 
-# Copy Kubernetes admin configuration
 sudo cp /etc/kubernetes/admin.conf $HOME/.kube/config
 
-# Give current user ownership of kubectl configuration
 sudo chown $(id -u):$(id -g) $HOME/.kube/config
 
-
-# =========================================================
 # 12. INSTALL CALICO NETWORK
-# =========================================================
 
-# Install Calico Kubernetes networking
 kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/v3.30.3/manifests/calico.yaml
 
-
-# =========================================================
 # 13. ALLOW PODS ON CONTROL-PLANE
-# =========================================================
 
-# Remove control-plane taint for single-node cluster
 kubectl taint nodes --all node-role.kubernetes.io/control-plane- || true
 
-
-# =========================================================
 # 14. WAIT FOR KUBERNETES
-# =========================================================
 
-# Wait for Kubernetes components to start
 echo "Waiting for Kubernetes node to become Ready..."
 
 sleep 30
 
-
-# =========================================================
 # 15. CHECK KUBERNETES
-# =========================================================
 
-# Display Kubernetes nodes
 echo "===== KUBERNETES NODES ====="
 
 kubectl get nodes
 
-
-# Display all Kubernetes pods
 echo "===== KUBERNETES PODS ====="
 
 kubectl get pods -A
 
-
-# Display completion message
 echo ""
 
 echo "=========================================="
-
 echo " Kubernetes installation completed!"
-
 echo "=========================================="
-```
 
-======================================================================
 
-# STEP 2 - VERIFY KUBERNETES
-
-======================================================================
+STEP 2 - VERIFY KUBERNETES
+--------------------------
 
 After the script finishes, check the Kubernetes node:
 
-```bash
 kubectl get nodes
-```
 
 Explanation:
 This displays the Kubernetes nodes and their current status.
 
-Expected output:
+Expected:
 
-```text
 NAME         STATUS   ROLES           AGE   VERSION
 kubernetes   Ready    control-plane   ...   v1.34.11
-```
 
 The important value is:
 
-```text
 STATUS = Ready
-```
 
-If the node is `Ready`, Kubernetes is working correctly.
+If the node is Ready, Kubernetes is working correctly.
 
 Check all Kubernetes pods:
 
-```bash
 kubectl get pods -A
-```
 
 Explanation:
 This displays pods from all Kubernetes namespaces.
 
 The Kubernetes system pods and Calico pods should eventually become
-`Running`.
+Running.
 
-======================================================================
 
-# IMPORTANT
-
-======================================================================
+IMPORTANT
+---------
 
 Do NOT run the Kubernetes installation script again if Kubernetes
 has already been successfully installed.
 
- Kubernetes installation is complete.
+Kubernetes installation is complete.
 
 The next step is to install Argo CD into this Kubernetes cluster.
 
-======================================================================
 
-# STEP 3 - INSTALL ARGO CD
-
-======================================================================
+STEP 3 - INSTALL ARGO CD
+------------------------
 
 Official Argo CD documentation:
 
 https://argo-cd.readthedocs.io/en/stable/getting_started/
 
----
 
-# STEP 3.1 - CREATE ARGO CD NAMESPACE
+STEP 3.1 - CREATE ARGO CD NAMESPACE
+------------------------------------
 
-Command:
-first cheak if argo cd avilable or not by using this command :kubectl get ns argocd
-```bash
+First check whether Argo CD namespace is available:
+
+kubectl get ns argocd
+
+Create namespace:
+
 kubectl create namespace argocd
-```
 
 Explanation:
-This creates a separate Kubernetes namespace called `argocd`.
-cheak :kubectl get ns
+This creates a separate Kubernetes namespace called argocd.
 
-Argo CD components will be installed inside this namespace.
+Check:
 
----
+kubectl get ns
 
-# STEP 3.2 - INSTALL ARGO CD
+Argo CD components will be installed inside the argocd namespace.
 
----
+
+STEP 3.2 - INSTALL ARGO CD
+--------------------------
 
 Command:
 
-```bash
 kubectl apply -n argocd --server-side --force-conflicts -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
-```
 
 Explanation:
+This downloads the official Argo CD installation manifest and creates
+the required Argo CD resources inside the argocd namespace.
 
-This downloads the official Argo CD installation manifest and
-creates the required Argo CD resources inside the `argocd` namespace.
+-n argocd
+→ Resources will be created in the argocd namespace.
 
-`-n argocd`
+--server-side
+→ Uses Kubernetes server-side apply.
 
-Means the resources will be created in the `argocd` namespace.
+--force-conflicts
+→ Allows server-side apply to resolve field ownership conflicts.
 
-`--server-side`
 
-Uses Kubernetes server-side apply to create/update the resources.
+STEP 3.3 - CHECK ARGO CD PODS
+-----------------------------
 
-`--force-conflicts`
-
-Allows server-side apply to resolve field ownership conflicts.
-
----
-
-# STEP 3.3 - CHECK ARGO CD PODS
-
----
-
-Command:
-
-```bash
 kubectl get pods -n argocd
-```
 
 Explanation:
-This displays all Argo CD pods running inside the `argocd` namespace.
+This displays all Argo CD pods running inside the argocd namespace.
 
 Initially, some pods may take time to start.
 
 Wait until the Argo CD pods show:
 
-```text
 STATUS = Running
-```
 
 
----
+CHECK NAMESPACE AND SERVICES
+---------------------------
+
 kubectl get ns argocd
+
 kubectl get svc -n argocd
---
-need to check the UI part
-  =>kubectl edit svc argocd-server -n argocd  --> use command and then change
-  =>change the type:clusterIP to NodePort/LoadBalancer  --> i change NodePort
-note:----------------------------------------------------------------------------------------
-we have 3 type of service 
-difference between cluster ip , node port and load balancer ?
-ClusterIP provides internal-only access, whereas NodePort opens a static port on all nodes for external access.
-LoadBalancer provisions a cloud provider's external load balancer to automatically distribute traffic to the service.
-------------------------------------------------------------------------------------------------
+
+
+CHECK THE UI
+------------
+
+Use:
+
+kubectl edit svc argocd-server -n argocd
+
+Change:
+
+type: ClusterIP
+
+to:
+
+type: NodePort
+
+We changed the service type to NodePort.
+
+
+SERVICE TYPES
+-------------
+
+1. ClusterIP
+   Provides internal-only access.
+
+2. NodePort
+   Opens a static port on all nodes for external access.
+
+3. LoadBalancer
+   Provisions a cloud provider's external load balancer to
+   automatically distribute traffic to the service.
+
+
 1. CHECK ARGO CD DEPLOYMENTS
 ----------------------------
 
 kubectl get deploy -n argocd
 
-This command shows the Deployments running inside the
-argocd namespace.
+This command shows the Deployments running inside the argocd namespace.
 
-It is used to verify that the Argo CD components are running.
+It is used to verify that Argo CD components are running.
 
 
 2. CHECK ARGO CD SERVICES
@@ -701,46 +716,48 @@ You will see the Argo CD Service and its ports.
 
 In our setup:
 
-    80:31803/TCP
-    443:30437/TCP
+80:31803/TCP
+443:30437/TCP
 
 Here:
 
-    80    -> Argo CD HTTP service port
-    31803 -> HTTP NodePort
+80
+→ Argo CD HTTP service port
 
-    443   -> Argo CD HTTPS service port
-    30437 -> HTTPS NodePort
+31803
+→ HTTP NodePort
+
+443
+→ Argo CD HTTPS service port
+
+30437
+→ HTTPS NodePort
 
 We use NodePort 30437 to access the Argo CD UI.
 
+So our Argo CD URL is:
+
+https://YOUR-PUBLIC-IP:30437
+
 NOTE:
-If you see <pending> for EXTERNAL-IP while using
-LoadBalancer, don't worry for this lab.
+If you see <pending> for EXTERNAL-IP while using LoadBalancer,
+don't worry for this lab.
 
 We are using NodePort 30437 to access Argo CD.
 
-So our Argo CD URL is:
 
-    https://YOUR-PUBLIC-IP:30437
-
-
-============================================================
 3. GO TO ARGO CD SECRET
-============================================================
+-----------------------
 
-First check the Secrets:
+First check Secrets:
 
 kubectl get secret -n argocd
-
 
 Then:
 
 kubectl get secret argocd-initial-admin-secret -n argocd -o yaml
 
-
-After this command, we get the Argo CD admin password
-in Base64 encoded format.
+This gives the Argo CD admin password in Base64 encoded format.
 
 The password is stored inside the Kubernetes Secret.
 
@@ -748,89 +765,81 @@ The password is stored inside the Kubernetes Secret.
 TO DECODE THE PASSWORD
 ----------------------
 
-We can copy the encoded password and use a Base64 decoder.
+Copy the encoded password and use a Base64 decoder.
 
 After decoding, we get the original password.
 
-
-OR
-
-
-We can directly decode the password on the server using:
+OR directly decode on the server:
 
 echo 'ENCODED-PASSWORD' | base64 -d
 
 Replace:
 
-    ENCODED-PASSWORD
+ENCODED-PASSWORD
 
 with the Base64 encoded password.
 
-This will display the original password.
+This displays the original password.
 
 
-============================================================
 4. OPEN ARGO CD SERVER
-============================================================
+----------------------
 
-Go to the browser and open:
+Open in browser:
 
 https://YOUR-PUBLIC-IP:30437
 
+Example:
 
-Login using:
+https://3.109.210.237:30437
 
-    Username : admin
-    Password : <decoded password>
+Login:
 
-
-After successfully LOGIN TO ARGO CD,
-we move to the next step.
+Username : admin
+Password : <decoded password>
 
 
-============================================================
+After successfully logging into Argo CD,
+move to the next step.
+
+
 5. CREATE GITHUB REPOSITORY
-============================================================
+---------------------------
 
 Open GitHub.
 
 Create a new repository:
 
-    ARGOCD-PROJECT
-
+ARGOCD-PROJECT
 
 Inside this repository create:
 
-    project1
-
+project1
 
 Inside project1 create two files:
 
-    deploy.yaml
-    mysvc.yaml
+deploy.yaml
+mysvc.yaml
 
+Structure:
 
-The structure will be:
-
-    ARGOCD-PROJECT
+ARGOCD-PROJECT
+|
+└── project1
     |
-    └── project1
-        |
-        ├── deploy.yaml
-        |
-        └── mysvc.yaml
+    ├── deploy.yaml
+    |
+    └── mysvc.yaml
 
 
-============================================================
 6. CREATE deploy.yaml
-============================================================
+---------------------
 
-Create the file:
+Create:
 
-    deploy.yaml
+deploy.yaml
 
-
-Add the following code:
+Add:
 
 apiVersion: apps/v1
 kind: Deployment
@@ -854,24 +863,21 @@ spec:
         #image: nginx:1.19
         image: swadhinswain475/mydockerimage:v1
 
-
 IMPORTANT:
 
-    replicas: 3
+replicas: 3
 
 This means we want 3 Nginx Pods.
 
 
-============================================================
 7. CREATE mysvc.yaml
-============================================================
+--------------------
 
-Create another file:
+Create:
 
-    mysvc.yaml
+mysvc.yaml
 
-
-Add the following code:
+Add:
 
 apiVersion: v1
 kind: Service
@@ -886,126 +892,108 @@ spec:
       targetPort: 80
   type: NodePort
 
-
 Here:
 
-    port: 8085
-        -> Kubernetes Service port
+port: 8085
+→ Kubernetes Service port
 
-    targetPort: 80
-        -> Nginx container port
+targetPort: 80
+→ Nginx container port
 
-    type: NodePort
-        -> Exposes the application through a NodePort
-
+type: NodePort
+→ Exposes the application through a NodePort
 
 In our current setup, the Service shows:
 
-    8085:32203/TCP
-
+8085:32203/TCP
 
 Here:
 
-    8085  -> Service Port
-    32203 -> NodePort
-    80    -> Nginx container port
+8085
+→ Service Port
+
+32203
+→ NodePort
+
+80
+→ Nginx container port
 
 
-============================================================
 8. CREATE APPLICATION IN ARGO CD
-============================================================
+--------------------------------
 
-Now go to the Argo CD UI.
+Go to Argo CD UI.
 
 Click:
 
-    NEW APP
-
+NEW APP
 
 Give:
 
-    Application Name = project1
+Application Name = project1
+Project Name = default
+Sync Policy = Manual
 
-    Project Name = default
-
-    Sync Policy = Manual
-
-
-Then add your Git repository URL.
+Add your Git repository URL.
 
 Repository:
 
-    ARGOCD-PROJECT
-
+ARGOCD-PROJECT
 
 Branch / Revision:
 
-    main
-
+main
 
 Path:
 
-    project1
-
+project1
 
 Cluster:
 
-    default / in-cluster
-
+default / in-cluster
 
 Namespace:
 
-    default
-
+default
 
 Then create the application.
 
 
-============================================================
 9. MANUAL SYNC
-============================================================
+--------------
 
 Because we selected:
 
-    Sync Policy = Manual
-
+Sync Policy = Manual
 
 Argo CD will not automatically synchronize the application.
 
 The application will initially show:
 
-    OutOfSync
+OutOfSync
 
+This means the configuration in Git and Kubernetes needs
+to be synchronized.
 
-This means the configuration in Git and Kubernetes
-needs to be synchronized.
+Click:
 
-Now click:
-
-    SYNC
+SYNC
 
 Then:
 
-    SYNCHRONIZE
+SYNCHRONIZE
 
-
-Argo CD will take the YAML files from GitHub and apply
-them to Kubernetes.
-
+Argo CD will take the YAML files from GitHub and apply them
+to Kubernetes.
 
 After synchronization, wait until everything becomes:
 
-    Healthy
-    Synced
+Healthy
+Synced
 
 
-After seeing everything Healthy in Argo CD UI,
-we move to the next step.
-
-
-============================================================
 10. CHANGE REPLICA DIRECTLY IN KUBERNETES
-============================================================
+-----------------------------------------
 
 Now we are going to make a change directly in Kubernetes.
 
@@ -1013,77 +1001,64 @@ Run:
 
 kubectl edit deploy nginx-deployment
 
-
 Find:
 
-    replicas: 3
-
+replicas: 3
 
 Change it to:
 
-    replicas: 4
-
+replicas: 4
 
 Save and exit.
 
-
-Now verify:
+Verify:
 
 kubectl get deploy -n default
 
-
 It should show:
 
-    nginx-deployment   4/4
-
+nginx-deployment   4/4
 
 This means Kubernetes now has 4 replicas.
 
-
 But in GitHub, deploy.yaml still has:
 
-    replicas: 3
+replicas: 3
 
 
-============================================================
 11. CHECK ARGO CD
-============================================================
+-----------------
 
-Now go to the Argo CD UI.
+Go to Argo CD UI.
 
 Argo CD will detect that Kubernetes has a different
 configuration from Git.
 
 GitHub:
 
-    replicas: 3
-
+replicas: 3
 
 Kubernetes:
 
-    replicas: 4
-
+replicas: 4
 
 Therefore Argo CD will show:
 
-    OutOfSync
+OutOfSync
 
+Click:
 
-Now click:
-
-    SYNC
+SYNC
 
 Then:
 
-    SYNCHRONIZE
-
+SYNCHRONIZE
 
 Argo CD will apply the configuration from GitHub.
 
 
-============================================================
 12. VERIFY AGAIN IN KUBERNETES
-============================================================
+------------------------------
 
 Come back to the Kubernetes server.
 
@@ -1091,37 +1066,31 @@ Run:
 
 kubectl get deploy -n default
 
-
 Now it will show:
 
-    nginx-deployment   3/3
+nginx-deployment   3/3
 
+Previously:
 
-Previously we changed:
+3 → 4
 
-    3 -> 4
+After Argo CD synchronization:
 
-
-But after Argo CD synchronization:
-
-    4 -> 3
-
+4 → 3
 
 Why?
 
 Because GitHub still contains:
 
-    replicas: 3
-
+replicas: 3
 
 Hence we proved:
 
-    GIT IS THE SINGLE SOURCE OF TRUTH.
+GIT IS THE SINGLE SOURCE OF TRUTH.
 
 
-============================================================
 13. NOW CHANGE REPLICA THROUGH GITHUB
-============================================================
+-------------------------------------
 
 Now we will make the change in the correct GitOps way.
 
@@ -1129,54 +1098,47 @@ Go to GitHub.
 
 Open:
 
-    project1/deploy.yaml
-
+project1/deploy.yaml
 
 Currently:
 
-    replicas: 3
-
+replicas: 3
 
 Change it to:
 
-    replicas: 5
-
+replicas: 5
 
 Then commit the change to:
 
-    main
+main
 
 
-============================================================
 14. SYNC AGAIN IN ARGO CD
-============================================================
+-------------------------
 
-Go to the Argo CD UI.
+Go to Argo CD UI.
 
 Argo CD will detect the change in GitHub.
 
 Because we selected:
 
-    Sync Policy = Manual
+Sync Policy = Manual
 
-
-We need to manually synchronize.
+we need to manually synchronize.
 
 Click:
 
-    SYNC
+SYNC
 
 Then:
 
-    SYNCHRONIZE
-
+SYNCHRONIZE
 
 Argo CD will apply the new configuration from GitHub.
 
 
-============================================================
 15. VERIFY IN KUBERNETES
-============================================================
+------------------------
 
 Come back to the Kubernetes server.
 
@@ -1184,260 +1146,762 @@ Run:
 
 kubectl get deploy -n default
 
-
 Now it will show:
 
-    nginx-deployment   5/5
-
+nginx-deployment   5/5
 
 This means Kubernetes now has:
 
-    5 replicas
-
+5 replicas
 
 We can also check the Pods:
 
 kubectl get pods -n default
 
-
 Now we should see 5 Nginx Pods.
 
 
-============================================================
 16. WHAT DID WE PROVE?
-============================================================
+----------------------
 
 FIRST:
 
 We changed Kubernetes directly:
 
-    replicas: 3
-          ↓
-    replicas: 4
-
+replicas: 3
+     ↓
+replicas: 4
 
 Argo CD detected the difference:
 
-    OutOfSync
-
+OutOfSync
 
 After synchronization:
 
-    Kubernetes = 3
-
+Kubernetes = 3
 
 because GitHub still contained:
 
-    replicas: 3
-
+replicas: 3
 
 Therefore:
 
-    GIT = SINGLE SOURCE OF TRUTH
+GIT = SINGLE SOURCE OF TRUTH
 
 
 SECOND:
 
 We changed GitHub:
 
-    replicas: 3
-          ↓
-    replicas: 5
-
+replicas: 3
+     ↓
+replicas: 5
 
 Then we synchronized Argo CD.
 
 Kubernetes became:
 
-    replicas: 5
-
+replicas: 5
 
 Therefore the correct GitOps flow is:
 
-    GITHUB
-       |
-       v
-    ARGO CD
-       |
-       v
-    KUBERNETES
-
+GITHUB
+   |
+   v
+ARGO CD
+   |
+   v
+KUBERNETES
 
 GitHub contains the desired configuration.
 
-Argo CD compares the desired state in Git
-with the actual state in Kubernetes.
+Argo CD compares the desired state in Git with the actual
+state in Kubernetes.
 
 If both are different:
 
-    OutOfSync
-
+OutOfSync
 
 After synchronization:
 
-    Kubernetes matches the configuration
-    stored in Git. .
+Kubernetes matches the configuration stored in Git.
 
 
+============================================================
+                 AUTOMATIC ARGO CD
+============================================================
 
+Create a new project:
 
+Application Name = project2
+Project Name = default
+Sync Policy = Automatic
 
+Enable:
+Self Heal
+Auto Create Namespace
 
+Repo URL:
+Your Git repository
 
+Path:
+project1
 
+Namespace:
+myproject1
 
 
+CHECK AUTOMATIC SYNC
+--------------------
 
+Go to Git and change:
 
+replicas = 6
 
+Now check in Argo CD UI.
 
+Also check in the server:
 
+kubectl get all -n myproject1
 
 
+============================================================
+                    QUICK REVISION
+============================================================
 
+Argo CD
+→ GitOps continuous delivery tool for Kubernetes
 
+Git
+→ Desired state / Single source of truth
 
+Kubernetes
+→ Actual state
 
+Repo Server
+→ Connects to Git
+→ Gets application configuration
+→ Renders manifests
 
+Application Controller
+→ Talks to Kubernetes
+→ Gets actual cluster state
+→ Compares Git vs Kubernetes
+→ Reconciles differences
 
+API Server
+→ Main entry point for UI/CLI requests
 
+Dex
+→ Authentication
 
+Redis
+→ Cache
 
+Manual Sync
+→ User clicks Sync/Synchronize
 
+Automatic Sync
+→ Argo CD synchronizes automatically
 
+Self Heal
+→ Helps restore the cluster to the Git-defined state
+   when unwanted cluster-side changes occur
 
+NodePort 30437
+→ Used in this lab to access the Argo CD UI
 
+Argo CD UI:
+https://YOUR-PUBLIC-IP:30437
 
 
+============================================================
+============================================================
+          DAY 9 - ARGO CD IMAGE UPDATER
+============================================================
 
 
+PART 1 - ARCHITECTURE AND END-TO-END FLOW
+==========================================
 
+INTERVIEWER:
+"Explain the architecture and end-to-end flow of Argo CD
+Image Updater."
 
 
+ANSWER:
+------------
 
+Argo CD Image Updater is used to detect newer versions of
+container images and update the image version used by an
+Argo CD application.
 
+The complete flow starts from the Docker Host, where the
+developer builds a new Docker image.
 
+The image is then pushed to Docker Hub.
 
+Argo CD Image Updater checks Docker Hub for a newer image
+version according to the configured update policy.
 
+When a new version is detected, Image Updater updates the
+image version in the Git repository.
 
+Argo CD monitors this Git repository. When the desired
+configuration changes, Argo CD detects the change and
+deploys the updated configuration to the Kubernetes cluster.
 
+Kubernetes then starts the application using the new Docker
+image version.
 
 
+END-TO-END FLOW:
 
+    Docker Host
+         |
+         | Dockerfile
+         |
+         | docker build
+         v
+    Docker Image
+         |
+         | docker push
+         v
+    Docker Hub
+         |
+         | New image version detected
+         v
+    Argo CD Image Updater
+         |
+         | Updates image version
+         v
+    GitHub
+         |
+         | deployment.yaml
+         v
+    Argo CD
+         |
+         | Deploy / Sync
+         v
+    Kubernetes Cluster
+         |
+         v
+    Application
 
 
+EXAMPLE:
 
+Initially:
 
+    Docker Hub:
+        myimage:v1.1.0
 
+    GitHub deployment.yaml:
+        image: myimage:v1.1.0
 
+    Kubernetes:
+        Application running v1.1.0
 
 
+Now developer creates a new version:
 
+    myimage:v1.1.1
 
 
+Developer pushes it:
 
+    Docker Host
+         |
+         v
+    Docker Hub
+         |
+         v
+    myimage:v1.1.1
 
 
+Argo CD Image Updater detects:
 
+    New version = v1.1.1
 
 
+It updates the Git configuration:
 
+    image: myimage:v1.1.0
 
+                TO
 
+    image: myimage:v1.1.1
 
 
+Argo CD detects the Git change and deploys the new
+configuration to Kubernetes.
 
+Finally:
 
+    Kubernetes
+         |
+         v
+    Application running v1.1.1
 
 
+So the complete flow is:
 
+    BUILD
+      ↓
+    PUSH
+      ↓
+    DOCKER HUB
+      ↓
+    IMAGE UPDATER
+      ↓
+    GITHUB
+      ↓
+    ARGO CD
+      ↓
+    KUBERNETES
+      ↓
+    NEW APPLICATION VERSION
 
 
+============================================================
+PART 2 - ARCHITECTURE COMPONENTS
+============================================================
 
 
+1. DOCKER HOST
+--------------
 
+Docker Host is the machine where we build the Docker image.
 
+It contains:
 
+    Dockerfile
 
+Flow:
 
+    Dockerfile
+        ↓
+    docker build
+        ↓
+    Docker Image
 
 
+------------------------------------------------------------
 
+2. DOCKER IMAGE
+---------------
 
+Docker Image is the packaged application that will be
+used to create containers.
 
+Different versions can exist.
 
+Example:
 
+    myimage:v1.1.0
+    myimage:v1.1.1
 
 
+Here:
 
+    v1.1.1 = newer version
 
 
+------------------------------------------------------------
 
+3. DOCKER HUB
+-------------
 
+Docker Hub is the container image registry.
 
+It stores our Docker images and their different versions.
 
+Example:
 
+    DOCKER HUB
+       |
+       +-- myimage:v1.1.0
+       |
+       +-- myimage:v1.1.1
 
 
+------------------------------------------------------------
 
+4. GITHUB
+---------
 
+GitHub contains the Kubernetes configuration files.
 
+Example:
 
+    deployment.yaml
+    service.yaml
 
 
+The Deployment YAML contains the image that Kubernetes
+should run.
 
+Example:
 
+    image: myimage:v1.1.0
 
 
+GitHub represents the desired configuration.
 
 
+------------------------------------------------------------
 
+5. ARGO CD IMAGE UPDATER
+-------------------------
 
+Argo CD Image Updater checks the container image registry
+for newer image versions.
 
+Example:
 
+Current image:
 
+    myimage:v1.1.0
 
 
+New image available:
 
+    myimage:v1.1.1
 
 
+Image Updater detects the newer version according to the
+configured update policy.
 
 
+------------------------------------------------------------
 
+6. ARGO CD
+----------
 
+Argo CD monitors the Git repository.
 
+When the Git configuration changes, Argo CD detects the
+change and deploys the desired configuration to Kubernetes.
 
 
+------------------------------------------------------------
 
+7. KUBERNETES CLUSTER
+---------------------
 
+Kubernetes runs the application.
 
+After Argo CD deploys the updated configuration, Kubernetes
+uses the new Docker image version.
 
 
+============================================================
+PART 3 - DOCKER IMAGE VERSION UPDATE
+============================================================
 
+Initial state:
 
+    GitHub:
+        image: myimage:v1.1.0
 
+    Docker Hub:
+        myimage:v1.1.0
 
+    Kubernetes:
+        myimage:v1.1.0
 
 
+New image is created:
 
+    myimage:v1.1.1
 
 
+Then:
 
+    docker push
+         ↓
+    Docker Hub
 
 
+Docker Hub now contains:
 
+    myimage:v1.1.0
+    myimage:v1.1.1
 
 
+Argo CD Image Updater detects:
 
+    v1.1.1
 
 
+Git configuration is updated:
 
+    image: myimage:v1.1.1
 
 
+Argo CD detects the Git change.
 
+Then Argo CD deploys the new configuration to Kubernetes.
 
 
+Final state:
 
+    Kubernetes
+         ↓
+    myimage:v1.1.1
 
 
+============================================================
+PART 4 - IMPORTANT CONCEPT
+============================================================
 
+Argo CD Image Updater works together with Argo CD.
+
+Image Updater:
+
+    Finds newer image versions
+           ↓
+    Updates the image version
+
+
+Argo CD:
+
+    Reads Git configuration
+           ↓
+    Deploys configuration
+           ↓
+    Kubernetes
+
+
+So they have different responsibilities:
+
+    Image Updater
+        =
+    Image version update
+
+
+    Argo CD
+        =
+    GitOps deployment
+
+
+============================================================
+PART 5 - GITOPS FLOW
+============================================================
+
+Traditional process:
+
+    Developer
+        ↓
+    Build Docker Image
+        ↓
+    Push to Docker Hub
+        ↓
+    Manually update Kubernetes
+        ↓
+    Deploy
+
+
+With Argo CD Image Updater:
+
+    Developer
+        ↓
+    Build Docker Image
+        ↓
+    Push to Docker Hub
+        ↓
+    Image Updater
+        ↓
+    GitHub
+        ↓
+    Argo CD
+        ↓
+    Kubernetes
+
+
+============================================================
+PART 6 - KEY POINTS FOR INTERVIEW
+============================================================
+
+Q: What is Argo CD Image Updater?
+
+A:
+It is a tool used with Argo CD to automatically detect
+new container image versions and update the image used by
+an Argo CD application.
+
+
+Q: Where are Docker images stored?
+
+A:
+
+    Docker Hub
+
+
+Q: Where is the Kubernetes desired configuration stored?
+
+A:
+
+    GitHub
+
+
+Q: Who detects the new Docker image version?
+
+A:
+
+    Argo CD Image Updater
+
+
+Q: Who deploys the updated Git configuration to Kubernetes?
+
+A:
+
+    Argo CD
+
+
+Q: Where does the application finally run?
+
+A:
+
+    Kubernetes
+
+
+============================================================
+PART 7 - ONE-MINUTE INTERVIEW ANSWER
+============================================================
+
+"Argo CD Image Updater is used to automate container image
+updates in a GitOps environment.
+
+First, we build a new Docker image on the Docker Host and
+push it to Docker Hub.
+
+Argo CD Image Updater checks the image registry and detects
+the newer image version according to the configured update
+policy.
+
+It then updates the image version in the Git repository.
+
+Argo CD monitors the Git repository, detects the change, and
+deploys the updated configuration to the Kubernetes cluster.
+
+Finally, Kubernetes runs the application using the new
+container image version.
+
+So the overall flow is:
+
+Docker Host → Docker Hub → Argo CD Image Updater
+→ GitHub → Argo CD → Kubernetes → Application."
+
+
+============================================================
+                    MAIN FLOW
+============================================================
+
+    DOCKER HOST
+         ↓
+    DOCKER IMAGE
+         ↓
+    DOCKER HUB
+         ↓
+    ARGO CD IMAGE UPDATER
+         ↓
+    GITHUB
+         ↓
+    ARGO CD
+         ↓
+    KUBERNETES
+         ↓
+    APPLICATION
+
+
+============================================================
+              ARGOCD IMAGE UPDATER NOTE BY SIR
+============================================================
+Let's there is v1.1 image tag is present and another new tag came to repo , how to image updater
+will update the configure file , so that total
+custmize basicaly creting layer of cluster files
+===================================
+Kubernetes Native Configuration Management
+
+Kustomize introduces a template-free way to customize application configuration that simplifies
+the use of off-the-shelf applications.
+Simple meaning
+
+Kustomize is a Kubernetes-native configuration management tool used to customize Kubernetes YAML
+files without modifying the original/base YAML files.
+Base YAML
+ |
+ |---- Dev Overlay
+ |---- Test Overlay
+ |---- Prod Overlay
+You can maintain one common Deployment/Service and customize things like replicas, image tags,
+namespaces, labels, and resource limits for Dev, Test, and Production
+-------------------------
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: demo-app-deployment
+
+spec:
+  replicas: 2
+
+  selector:
+    matchLabels:
+      app: mywebapp
+
+  template:
+    metadata:
+      labels:
+        app: mywebapp
+
+    spec:
+      containers:
+	  - name: mywebapp
+          image: 
+          ports:
+            - containerPort: 80
+----------------------------------------------------------
+apiVersion: v1
+kind: Service
+
+metadata:
+  name: mywebapp-service
+
+spec:
+  selector:
+    app: demo-app
+
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+      nodePort: 30008
+
+  type: NodePort
+----------------------------------------------------------
+kubectl apply -n argocd -f
+https://raw.githubusercontent.com/argoproj-labs/argocd-image-updater/stable/config/install.yaml
+1st we have to tell updater which image he has to look into name
+how image updter will find new image for same
+need to set anotation and it is meta data which
+argo-cd=>project->detils=>ANNOTATIONS
+check the semvar=>symantic version
+                   =>image:1.2.x
+                               1
+                               2 =>consider this image
+kubectl get application -n argocd
+->need to set anotation  it is basically set in meta data
+------------------------
+annotations:
+  argocd-image-updater.argoproj.io/image-list: mydockerimage=swadhinswain475/mydockerimage:v1.x
+  argocd-image-updater.argoproj.io/mydockerimage.update-strategy: semver
+  argocd-image-updater.argoproj.io/write-back-method: git
+==========
+v1.0.0
+v1.1.0
+v1.2.0
+v1.3.0
+==========
+Important: If your tags are only v1, v2, v3, that's not the best fit for semver. Use tags such as
+v1.0.0, v1.0.1, v1.1.0 for this strategy.

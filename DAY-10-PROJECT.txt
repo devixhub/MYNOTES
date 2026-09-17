@@ -1,0 +1,382 @@
+DAY-10 PROJECT NOTES
+====================
+
+PART-1: CI/CD PIPELINE — WHAT WE HAVE DONE
+-------------------------------------------
+
+OVERALL FLOW:
+Developer → GitHub → Webhook → Jenkins → Checkout Source → Build/Test → SonarQube → Quality Gate → Nexus → Docker Build → Trivy → Docker Hub → kubectl apply → Kubernetes Deployment → Application
+
+STEP-1: CODE PUSH TO GITHUB
+Developer writes/updates code and pushes it to GitHub.
+
+git add .
+git commit -m "code update"
+git push
+
+GitHub stores the latest application source code.
+
+STEP-2: GITHUB WEBHOOK TO JENKINS
+After code is pushed, GitHub sends a webhook notification to Jenkins.
+
+GitHub → Webhook → Jenkins
+
+Webhook means:
+"New code has been pushed, start the Jenkins pipeline."
+
+STEP-3: JENKINS
+Jenkins is the automation tool that runs the CI/CD pipeline.
+Jenkins receives the webhook and starts the pipeline.
+
+STEP-4: CHECKOUT SOURCE
+Jenkins downloads the latest source code from GitHub into its workspace.
+
+GitHub → Jenkins Workspace
+
+Jenkins uses Git to checkout the required branch/code.
+
+STEP-5: BUILD / TEST
+For Spring Boot application:
+
+mvn clean package
+
+Flow:
+Source Code → Compile → Test → Package → JAR
+
+Example:
+student-service-1.0.7.jar
+
+Purpose:
+Check whether the application can be compiled/tested and create the build artifact.
+
+STEP-6: SONARQUBE
+Jenkins sends the source code to SonarQube for code analysis.
+
+SonarQube checks:
+- Bugs
+- Vulnerabilities
+- Code Smells
+- Code Duplication
+- Code Quality
+
+Purpose:
+Check source-code quality before continuing.
+
+STEP-7: QUALITY GATE
+SonarQube checks whether the code meets the configured Quality Gate.
+
+SonarQube → Quality Gate
+PASS → Continue
+FAIL → Pipeline stops
+
+PASS → Nexus
+FAIL → STOP
+
+STEP-8: NEXUS
+After Quality Gate passes, the built artifact/JAR is uploaded to Nexus.
+
+JAR → Nexus
+
+Nexus is used as an artifact repository.
+
+Example:
+student-service-1.0.7.jar
+
+Purpose:
+Store the build artifact for reuse.
+
+STEP-9: DOCKER BUILD
+Jenkins creates a Docker image for the application.
+
+JAR + Dockerfile → Docker Build → Docker Image
+
+Example:
+student-service:1.0.7
+
+Purpose:
+Package the application into a Docker image.
+
+STEP-10: TRIVY SCAN
+Trivy scans the Docker image for known vulnerabilities.
+
+Docker Image → Trivy → Vulnerability Scan
+
+PASS → Continue
+FAIL → Pipeline stops
+
+Purpose:
+Security check for the Docker image.
+
+STEP-11: DOCKER HUB
+After Trivy passes, Jenkins pushes the Docker image to Docker Hub.
+
+Docker Image → Trivy PASS → Docker Hub
+
+Purpose:
+Store the Docker image so it can be used during deployment.
+
+STEP-12: DEPLOY TO KUBERNETES
+Jenkins deploys the application using:
+
+kubectl apply
+
+Flow:
+Docker Hub → kubectl apply → Kubernetes Deployment → ReplicaSet → Pod → Container → Application
+
+COMPLETE CI/CD FLOW:
+Developer
+↓
+Git Push
+↓
+GitHub
+↓
+Webhook
+↓
+Jenkins
+↓
+Checkout Source
+↓
+Build/Test
+↓
+SonarQube
+↓
+Quality Gate
+├── FAIL → STOP
+└── PASS
+    ↓
+  Nexus
+    ↓
+Docker Build
+    ↓
+Trivy
+├── FAIL → STOP
+└── PASS
+    ↓
+Docker Hub
+    ↓
+kubectl apply
+    ↓
+Kubernetes Deployment
+    ↓
+Pods
+    ↓
+Application
+
+
+PART-2: APPLICATION FLOW — WHAT WE ARE GOING TO DO
+---------------------------------------------------
+
+OVERALL FLOW:
+Browser → GoDaddy DNS → AWS Route 53 → AWS Application Load Balancer → NGINX Ingress Controller → Path-Based Routing
+
+Path `/` → idream-ui-service:80 → React Pod
+Path `/api/` → idream-api-service:8080 → Spring Boot Pod → AWS RDS MySQL
+
+STEP-1: BROWSER
+User opens the application using the domain name in the browser.
+
+Example:
+https://www.example.com
+
+STEP-2: GODADDY DNS
+GoDaddy manages our domain name/DNS setup.
+
+Purpose:
+Connect the domain name with the AWS routing setup.
+
+Browser → GoDaddy DNS
+
+STEP-3: AWS ROUTE 53
+The DNS setup directs the request toward AWS Route 53.
+
+Route 53 is AWS DNS service.
+
+Purpose:
+Manage DNS records and direct traffic to the required AWS endpoint.
+
+GoDaddy DNS → Route 53
+
+STEP-4: APPLICATION LOAD BALANCER
+Route 53 directs traffic to the AWS Application Load Balancer.
+
+Browser
+↓
+GoDaddy DNS
+↓
+Route 53
+↓
+Application Load Balancer
+
+Purpose:
+Receive the incoming application request and forward it toward Kubernetes.
+
+STEP-5: NGINX INGRESS CONTROLLER
+The Application Load Balancer sends traffic to the NGINX Ingress Controller inside Kubernetes.
+
+NGINX Ingress Controller
+(NodePort 80)
+
+Purpose:
+Check the URL path and decide which application should receive the request.
+
+STEP-6: PATH-BASED ROUTING
+
+PATH 1: `/`
+Request:
+https://www.example.com/
+
+Flow:
+/
+↓
+idream-ui-service:80
+↓
+React Pod
+↓
+React Application
+
+Meaning:
+`/` request goes to the frontend.
+
+PATH 2: `/api/`
+Request:
+https://www.example.com/api/
+
+Flow:
+/api/
+↓
+idream-api-service:8080
+↓
+Spring Boot Pod
+↓
+Spring Boot Application
+↓
+AWS RDS MySQL
+
+Meaning:
+`/api/` request goes to the backend.
+
+STEP-7: SPRING BOOT TO DATABASE
+Spring Boot Pod communicates with AWS RDS MySQL.
+
+Spring Boot
+↓
+Database Query
+↓
+AWS RDS MySQL
+↓
+Response
+
+WHY NGINX INGRESS?
+NGINX Ingress gives one entry point and routes traffic based on the URL path.
+
+example.com/
+↓
+React
+
+example.com/api/
+↓
+Spring Boot
+
+Human way:
+NGINX Ingress acts like a traffic controller and sends each request to the correct application.
+
+
+DAY-10 FINAL ARCHITECTURE
+=========================
+
+CI/CD SIDE:
+GitHub
+↓
+Jenkins
+↓
+Maven Build/Test
+↓
+SonarQube
+↓
+Quality Gate
+↓
+Nexus
+↓
+Docker Build
+↓
+Trivy
+↓
+Docker Hub
+↓
+kubectl apply
+↓
+Kubernetes
+
+USER TRAFFIC SIDE:
+Browser
+↓
+GoDaddy
+↓
+Route 53
+↓
+AWS ALB
+↓
+NGINX Ingress
+↓
+React / Spring Boot
+↓
+RDS MySQL
+
+
+DAY-10 COMPLETE END-TO-END FLOW
+================================
+
+Developer
+↓
+GitHub
+↓
+Webhook
+↓
+Jenkins
+↓
+Build + Test
+↓
+SonarQube
+↓
+Quality Gate
+↓
+Nexus
+↓
+Docker Build
+↓
+Trivy Scan
+↓
+Docker Hub
+↓
+kubectl apply
+↓
+Kubernetes Deployment
+↓
+Pods
+↓
+Application
+↓
+User Request
+↓
+Browser
+↓
+GoDaddy DNS
+↓
+Route 53
+↓
+AWS Application Load Balancer
+↓
+NGINX Ingress Controller
+↓
+`/` → React Service → React Pod
+
+OR
+
+`/api/` → API Service → Spring Boot Pod → AWS RDS MySQL
+
+
+INTERVIEW ANSWER:
+-----------------
+"Our CI/CD pipeline starts when a developer pushes code to GitHub. A webhook triggers Jenkins, which checks out the code, builds and tests it using Maven, and sends it to SonarQube for code-quality analysis. After the Quality Gate passes, the artifact is stored in Nexus. Jenkins then builds a Docker image, scans it using Trivy, pushes it to Docker Hub, and deploys it to Kubernetes using kubectl apply.
+
+For application access, the user request comes from the browser to GoDaddy DNS, then Route 53, the AWS Application Load Balancer, and finally the NGINX Ingress Controller. NGINX performs path-based routing: `/` goes to the React UI service, while `/api/` goes to the Spring Boot API service. The Spring Boot application communicates with AWS RDS MySQL."

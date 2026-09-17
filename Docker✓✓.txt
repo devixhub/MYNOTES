@@ -1,106 +1,184 @@
-Day-1
-======================
 ============================================================
-                    DOCKER NOTES
+                     DOCKER NOTES
 ============================================================
-:::::::::::::::::::::::;::::::::::::::::::::::::::DOCKER Architecture:::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-First, we take a Linux server, for example an Ubuntu machine, and install Docker on it.
-Once Docker is installed, that complete machine is called the Docker Host.
+
+DAY-1
+-----
+
+DOCKER ARCHITECTURE
+-------------------
+
+First, we take a Linux server, for example an Ubuntu machine,
+and install Docker on it.
+
+Once Docker is installed, that complete machine is called the
+Docker Host.
+
 Inside the Docker Host, Docker mainly has two components:
-1/-Docker Server (Docker Daemon)
-The Docker Server is responsible for actually performing Docker operations such as creating containers, building images, 
-starting and stopping containers, etc. It also manages the local Docker images and containers.
-Docker Client (CLI)
-The Docker Client is where we execute Docker commands such as:
-docker build
-docker run
-docker create
-docker start
-docker stop
-docker push
-docker pull
 
-When we execute these commands through the Docker Client, the request goes to the Docker Server, 
-and the Docker Server performs the required operation.
+1. Docker Server (Docker Daemon)
+   The Docker Server is responsible for performing Docker operations
+   such as creating containers, building images, starting and stopping
+   containers, etc. It also manages local Docker images and containers.
 
-2. Docker Client 
-Now, inside the Docker Client side, we create a Dockerfile.
-The Dockerfile is a text file in which we specify what our application needs.
+2. Docker Client (CLI)
+   The Docker Client is where we execute Docker commands such as:
 
-For example we can specify: WE NEED
+   docker build
+   docker run
+   docker create
+   docker start
+   docker stop
+   docker push
+   docker pull
+
+When we execute these commands through the Docker Client, the request
+goes to the Docker Server, and the Docker Server performs the required
+operation.
+
+
+DOCKER CLIENT
+-------------
+
+Inside the Docker Client side, we create a Dockerfile.
+
+The Dockerfile is a text file in which we specify what our application
+needs.
+
+For example:
+
 Ubuntu
 Java
 Python
 Maven
-So the Dockerfile tells Docker->I need an Ubuntu environment, and inside that environment I need Java, Python and Maven."
-Docker Build
 
-3 DOCKER-BUILD
-After creating the Dockerfile, 
-we use the docker build command EXAMPLE :docker build -t myenv:v1 .
-The docker build command reads the instructions from the Dockerfile and starts creating the required environment.
+So the Dockerfile tells Docker:
 
-When we execute docker build, Docker reads the Dockerfile and executes the instructions step by step. 
-During the build, Docker creates a temporary container and performs the required operations inside it. 
-Each step creates a filesystem layer. After all the steps are completed, these layers are combined to form the final Docker image, 
-and the temporary container is removed.
+"I need an Ubuntu environment, and inside that environment I need
+Java, Python and Maven."
 
-4.Docker Image
-The final result of docker build is a Docker Image.  example:myenv:v1
-myenv → image name
-v1    → image tag/version
-The image contains everything that we specified in our Dockerfile, such as:
-Layer 4 → Maven
-Layer 3 → Python
-Layer 2 → Java
-Layer 1 → Ubuntu
 
-5. Docker Run
-Once the image is available, we use: docker run myenv:v1 The purpose of docker run is to create and start 
-a container from the Docker image.
+DOCKER BUILD
+------------
 
-DOCKER RUN IS USED TO CREATE AND START A CONTAINER FROM AN IMAGE. 
-WE CAN CREATE MULTIPLE CONTAINERS FROM THE SAME DOCKER IMAGE. THE IMAGE CAN BE THE SAME, 
-BUT EACH CONTAINER GETS A DIFFERENT CONTAINER ID
-For example:
+After creating the Dockerfile, we use:
+
+docker build -t myenv:v1 .
+
+The docker build command reads the instructions from the Dockerfile
+and starts creating the required environment.
+
+When we execute docker build, Docker reads the Dockerfile and executes
+the instructions step by step.
+
+During the build:
+
+1. Docker creates a temporary container.
+2. Required operations are performed inside it.
+3. Each step creates a filesystem layer.
+4. After all steps are completed, these layers form the final
+   Docker image.
+5. The temporary container is removed.
+
+
+DOCKER IMAGE
+------------
+
+The final result of docker build is a Docker Image.
+
+Example:
+
+myenv:v1
+
+myenv -> image name
+v1    -> image tag/version
+
+The image contains everything specified in the Dockerfile.
+
+Layers:
+
+Layer 4 -> Maven
+Layer 3 -> Python
+Layer 2 -> Java
+Layer 1 -> Ubuntu
+
+
+DOCKER RUN
+----------
+
+Once the image is available:
+
+docker run myenv:v1
+
+The purpose of docker run is to create and start a container
+from the Docker image.
+
+Docker run is used to create and start a container from an image.
+
+We can create multiple containers from the same Docker image.
+
+The image can be the same, but each container gets a different
+container ID.
+
+Example:
 
 Docker Image: myenv:v1
 
-        |
-        | docker run  ->docker run myenv:v1
-        v
+docker run myenv:v1
+    -> Container C1
 
-   Container C1
+Run again:
 
-If we execute docker run again:
+docker run myenv:v1
+    -> Container C2
+
+Run again:
+
+docker run myenv:v1
+    -> Container C3
+
+The image remains the same, but every newly created container
+gets its own unique container ID.
+
+
+DOCKER PUSH
+-----------
+
+Suppose we have created:
+
 myenv:v1
-   |
-   +----> C1
-   |
-   +----> C2
-   |
-   +----> C3
 
-The image remains the same, but every newly created container gets its own unique container ID.
+and we want to share it with another developer.
 
-6. Docker Push
-Now suppose we have created our image: myenv:v1 and we want to share it with another developer.
-We use: docker push myenv:v1
-The purpose of docker push is:
-To upload/share a Docker image to a remote registry.
-The image is uploaded from our Docker Host to Docker Hub / remote registry.
+We use:
 
-7. Docker Pull
-Now imagine another developer has another Docker Host.That developer needs the same image.
-They can use:docker pull username/myenv:v1
-After the image is downloaded, the developer can create a container from it:
+docker push myenv:v1
+
+The purpose of docker push is to upload/share a Docker image
+to a remote registry.
+
+The image is uploaded from our Docker Host to Docker Hub /
+remote registry.
 
 
-::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+DOCKER PULL
+-----------
+
+Now imagine another developer has another Docker Host.
+
+That developer needs the same image.
+
+They can use:
+
+docker pull username/myenv:v1
+
+After the image is downloaded, the developer can create a
+container from it.
 
 
-1. WHAT IS DOCKER?
-------------------
+============================================================
+                  WHAT IS DOCKER?
+============================================================
 
 Docker is a containerization platform.
 
@@ -120,10 +198,12 @@ Application
     ---> Docker Container
 
 
-2. WHY DO WE NEED DOCKER?
---------------------------
+============================================================
+                WHY DO WE NEED DOCKER?
+============================================================
 
-PROBLEM 1:
+PROBLEM 1
+---------
 
 Suppose we have multiple applications.
 
@@ -135,29 +215,31 @@ they may have dependency or version conflicts.
 
 Example:
 
-APP-1 ---> Java 8
-APP-2 ---> Java 11
+APP-1 -> Java 8
+APP-2 -> Java 11
 
-Both applications may not work properly because they
-require different Java versions.
+Both applications may not work properly because they require
+different Java versions.
 
 
-PROBLEM 2:
+PROBLEM 2
+---------
 
-Different applications may require different versions
-of the same software.
+Different applications may require different versions of the
+same software.
 
-For example:
+Example:
 
-Application 1 ---> Java 8
-Application 2 ---> Java 11
-Application 3 ---> Java 17
+Application 1 -> Java 8
+Application 2 -> Java 11
+Application 3 -> Java 17
 
 Managing different versions on one machine can create
 dependency problems.
 
 
-PROBLEM 3:
+PROBLEM 3
+---------
 
 RESOURCE UTILIZATION
 
@@ -174,8 +256,9 @@ Also, when one application is running, it may affect
 other applications.
 
 
-3. VIRTUALIZATION
------------------
+============================================================
+                     VIRTUALIZATION
+============================================================
 
 To solve these problems, companies use virtualization.
 
@@ -185,77 +268,62 @@ Virtualization allows us to create multiple Virtual Machines
 A software called a HYPERVISOR is used to create and run
 Virtual Machines.
 
-
 HYPERVISOR
 ----------
 
 A hypervisor is software that allows us to create and run
 Virtual Machines on a physical machine.
 
-
 Example:
 
-                PHYSICAL MACHINE
-                       |
-                  HYPERVISOR
-              /        |        \
-             /         |         \
-           VM-1       VM-2       VM-3
-            |           |          |
-          OS-1        OS-2       OS-3
-            |           |          |
-          APP-1       APP-2      APP-3
+PHYSICAL MACHINE
+       |
+   HYPERVISOR
+   /    |    \
+  /     |     \
+VM-1   VM-2   VM-3
+ |       |      |
+OS-1   OS-2   OS-3
+ |       |      |
+APP-1  APP-2   APP-3
 
 
-4. ADVANTAGES OF VIRTUALIZATION
---------------------------------
+ADVANTAGES OF VIRTUALIZATION
+----------------------------
 
-1. We can run different operating systems on one
-   physical machine.
-
+1. We can run different operating systems on one physical machine.
 2. We can deploy multiple applications.
-
 3. Applications can have different OS environments.
-
 4. We can use different versions of software.
-
 5. Better isolation between applications.
-
-6. Multiple environments can be created on one
-   physical machine.
+6. Multiple environments can be created on one physical machine.
 
 
-5. DISADVANTAGES OF VIRTUALIZATION
------------------------------------
+DISADVANTAGES OF VIRTUALIZATION
+------------------------------
 
 1. Each VM needs its own operating system.
-
 2. Each VM requires CPU and RAM.
-
 3. More resources are consumed.
-
-4. There is resource overhead because every VM has
-   a complete OS.
-
+4. There is resource overhead because every VM has a complete OS.
 5. VM creation and management can be heavier.
-
 6. Hardware resources may not be efficiently utilized.
-
 
 Example:
 
 Physical Machine = 8 GB RAM
 
-VM-1 ---> 2 GB RAM
-VM-2 ---> 2 GB RAM
-VM-3 ---> 2 GB RAM
+VM-1 -> 2 GB RAM
+VM-2 -> 2 GB RAM
+VM-3 -> 2 GB RAM
 
-A significant amount of memory is consumed by the
-operating systems themselves.
+A significant amount of memory is consumed by the operating
+systems themselves.
 
 
-6. DOCKER
----------
+============================================================
+                         DOCKER
+============================================================
 
 Docker is a containerization platform.
 
@@ -265,56 +333,43 @@ into a container.
 The container provides an isolated environment in which
 the application can run.
 
-
 Example:
 
 Application
-     |
-     +-- Java
-     +-- Python
-     +-- Maven
-     +-- Dependencies
-     |
-     ---> Docker Container
+    |
+    +-- Java
+    +-- Python
+    +-- Maven
+    +-- Dependencies
+    |
+    ---> Docker Container
 
 
-7. WHY DO WE USE DOCKER?
--------------------------
-
-Main reasons:
+WHY DO WE USE DOCKER?
+---------------------
 
 1. Easy deployment
-
 2. Application isolation
-
 3. Better resource utilization
-
 4. Dependency management
-
 5. Same environment across different machines
-
 6. Lightweight compared to Virtual Machines
-
 
 Docker deployment flow:
 
 Dockerfile
     |
-    v
 Docker Image
     |
-    v
 Docker Container
 
 
-8. DOCKER CONTAINER
--------------------
+DOCKER CONTAINER
+----------------
 
-A container is an isolated environment in which an
-application runs.
+A container is an isolated environment in which an application runs.
 
-The container contains the application and its required
-dependencies.
+The container contains the application and its required dependencies.
 
 Example:
 
@@ -325,18 +380,16 @@ Container
    +-- Python
    +-- Maven
 
+Container is lightweight compared to a Virtual Machine because
+it does not require a complete guest operating system for every
+application.
 
-Container is lightweight compared to a Virtual Machine
-because it does not require a complete guest operating
-system for every application.
 
-
-9. CONTAINER LIFECYCLE
-----------------------
+============================================================
+                  CONTAINER LIFECYCLE
+============================================================
 
 When we create a container, the container has a lifecycle.
-
-Example:
 
 Create Container
        |
@@ -352,18 +405,18 @@ Create Container
        v
     Remove
 
-
 A container can be:
 
-- Created
-- Started
-- Running
-- Stopped
-- Removed
+Created
+Started
+Running
+Stopped
+Removed
 
 
-10. DOCKER HOST
----------------
+============================================================
+                    DOCKER HOST
+============================================================
 
 Docker Host means the machine where Docker is installed.
 
@@ -372,23 +425,21 @@ Example:
 Ubuntu Machine
       |
       +-- Docker installed
-      |
       +-- Docker Host
-      |
       +-- Containers
 
+If we install Docker on an Ubuntu machine, that Ubuntu machine
+becomes a Docker Host.
 
-If we install Docker on an Ubuntu machine, that Ubuntu
-machine becomes a Docker Host.
 
-
-11. DOCKER CLIENT
------------------
+============================================================
+                   DOCKER CLIENT
+============================================================
 
 Docker Client is the interface through which we execute
 Docker commands.
 
-For example:
+Examples:
 
 docker run
 docker ps
@@ -397,13 +448,13 @@ docker start
 docker rm
 docker images
 
-
-When we execute a Docker command, the Docker client sends
+When we execute a Docker command, the Docker Client sends
 the request to the Docker service running on the Docker Host.
 
 
-12. DOCKER SERVER / LOCAL REGISTRY
------------------------------------
+============================================================
+             DOCKER SERVER / LOCAL REGISTRY
+============================================================
 
 The Docker environment can also contain a local registry.
 
@@ -413,8 +464,9 @@ Docker images can be stored locally or in a remote registry
 such as Docker Hub.
 
 
-13. DOCKER HUB
---------------
+============================================================
+                      DOCKER HUB
+============================================================
 
 Docker Hub is a cloud-based public registry.
 
@@ -426,46 +478,42 @@ It is used to:
 
 Docker Hub can be used as a remote registry.
 
-
 Example:
 
 Developer
-    |
-    | docker push
-    v
+   |
+   | docker push
+   v
 Docker Hub
-    |
-    | docker pull
-    v
+   |
+   | docker pull
+   v
 Another Developer
 
 
-14. DOCKER IMAGE
-----------------
+============================================================
+                     DOCKER IMAGE
+============================================================
 
-A Docker image is a package/template used to create
-containers.
+A Docker image is a package/template used to create containers.
 
 Example:
 
 myenv:v1
 
-Here:
-
 myenv = image name
 v1    = image tag/version
-
 
 Example:
 
 docker run myenv:v1
 
-
 This creates a container from the image.
 
 
-15. DOCKERFILE
---------------
+============================================================
+                       DOCKERFILE
+============================================================
 
 Dockerfile contains instructions used to build a Docker image.
 
@@ -481,33 +529,28 @@ RUN apt install -y python3
 
 RUN apt install -y maven
 
-
 The Dockerfile specifies what we need inside the image.
 
-For example:
+Example:
 
 Ubuntu
    |
-   v
 Java
    |
-   v
 Python
    |
-   v
 Maven
 
 
-16. DOCKER BUILD
-----------------
+============================================================
+                    DOCKER BUILD
+============================================================
 
-Docker build is used to create a Docker image from a
-Dockerfile.
+Docker build is used to create a Docker image from a Dockerfile.
 
 Command:
 
 docker build -t myenv:v1 .
-
 
 Flow:
 
@@ -522,8 +565,9 @@ Docker Image
 Container
 
 
-17. WHAT HAPPENS DURING DOCKER BUILD?
---------------------------------------
+============================================================
+             WHAT HAPPENS DURING DOCKER BUILD?
+============================================================
 
 When we execute:
 
@@ -534,41 +578,38 @@ Docker reads the Dockerfile instructions.
 Example:
 
 FROM ubuntu
-       |
-       v
+    |
+    v
 Ubuntu base layer
 
 Install Java
-       |
-       v
+    |
+    v
 Java layer
 
 Install Python
-       |
-       v
+    |
+    v
 Python layer
 
 Install Maven
-       |
-       v
+    |
+    v
 Maven layer
-
 
 These layers are combined to create the final Docker image.
 
 
-18. DOCKER IMAGE LAYERS
------------------------
+============================================================
+                  DOCKER IMAGE LAYERS
+============================================================
 
 Docker images are built using layers.
 
-For example:
-
-Layer 4 ---> Maven
-Layer 3 ---> Python
-Layer 2 ---> Java
-Layer 1 ---> Ubuntu
-
+Layer 4 -> Maven
+Layer 3 -> Python
+Layer 2 -> Java
+Layer 1 -> Ubuntu
 
 Each instruction in the Dockerfile can create a new
 filesystem layer.
@@ -576,16 +617,26 @@ filesystem layer.
 The final result is a Docker Image.
 
 
-19. DOCKER RUN
---------------
+============================================================
+                      DOCKER RUN
+============================================================
 
 docker run is used to create and start a new container
 from a Docker image.
 
+Important note from practice:
+
+It will pull the image from Docker Hub and download it
+to the local registry if the image is not available locally.
+
+When we do the second run, Docker does not go to the
+central/public registry first.
+
+It searches the local registry first.
+
 Example:
 
 docker run -it centos
-
 
 Here:
 
@@ -593,20 +644,19 @@ docker run = create and start a new container
 -it        = interactive terminal
 centos     = image name
 
-
 Another example:
 
 docker run -it centos:7
 
-
 Here:
 
 centos = image
-7     = tag/version
+7      = tag/version
 
 
-20. docker run VS docker start
-------------------------------
+============================================================
+                DOCKER RUN VS DOCKER START
+============================================================
 
 docker run:
 
@@ -617,22 +667,19 @@ Example:
 
 docker run -it centos
 
-
 If we execute docker run again:
 
 docker run -it centos
 
 another NEW container will be created.
 
-The image can be the same, but the container ID will be
-different.
+The image can be the same, but the container ID will be different.
 
 
 docker start:
 
 - Starts an EXISTING stopped container.
 - It does NOT create a new container.
-
 
 Example:
 
@@ -641,13 +688,16 @@ docker start <container_id>
 
 IMPORTANT:
 
-docker run  ---> Create + Start NEW container
+docker run
+-> Create + Start NEW container
 
-docker start ---> Start EXISTING stopped container
+docker start
+-> Start EXISTING stopped container
 
 
-21. INTERACTIVE TERMINAL (-it)
-------------------------------
+============================================================
+                  INTERACTIVE TERMINAL
+============================================================
 
 -i means interactive.
 
@@ -657,75 +707,70 @@ Together:
 
 -it
 
-means we can interact with the container through the
-terminal.
-
+means we can interact with the container through the terminal.
 
 Example:
 
 docker run -it centos
 
+After entering the container and attaching to the terminal,
+if we want to go out of the container but keep the container
+running:
 
-After entering the container, we can execute commands
-inside it.
+CTRL + P
+CTRL + Q
 
 
-22. DOCKER ATTACH
------------------
+============================================================
+                     DOCKER ATTACH
+============================================================
 
 If a container is already running and we want to connect
 to its terminal:
 
 docker attach <container_id>
 
-
 Example:
 
 docker attach fa671c640475
 
-
 This attaches our terminal to the running container.
 
 
-23. EXIT FROM CONTAINER
------------------------
+============================================================
+                 EXIT FROM CONTAINER
+============================================================
 
 If we are inside a container and type:
 
 exit
-
 
 the container's main process may stop.
 
 Example:
 
 Container is running
-       |
-       v
+      |
 docker attach
-       |
-       v
+      |
 Inside container
-       |
-       v
+      |
 exit
-       |
-       v
+      |
 Container stops
 
 
-If we want to detach from the container while keeping it
-running, we can use:
+If we want to detach from the container while keeping it running:
 
 CTRL + P
 CTRL + Q
 
-
 This detaches from the container without stopping it.
 
 
-24. DOCKER STOP
----------------
+============================================================
+                     DOCKER STOP
+============================================================
 
 docker stop is used to stop a running container.
 
@@ -733,11 +778,9 @@ Command:
 
 docker stop <container_id>
 
-
 Example:
 
 docker stop fa671c640475
-
 
 After stopping:
 
@@ -747,19 +790,18 @@ Running Container
 Stopped Container
 
 
-25. DOCKER START
-----------------
+============================================================
+                    DOCKER START
+============================================================
 
 If a container is stopped and we want to start the same
 container again:
 
 docker start <container_id>
 
-
 Example:
 
 docker start fa671c640475
-
 
 Remember:
 
@@ -768,8 +810,9 @@ docker start does NOT create a new container.
 It starts the existing stopped container.
 
 
-26. DOCKER RM
--------------
+============================================================
+                       DOCKER RM
+============================================================
 
 docker rm is used to remove a container.
 
@@ -777,36 +820,34 @@ Example:
 
 docker rm <container_id>
 
-
 Usually, a container needs to be stopped before removing it.
 
 Flow:
 
 Running Container
        |
-       | docker stop
-       v
+docker stop
+       |
 Stopped Container
        |
-       | docker rm
-       v
+docker rm
+       |
 Container Removed
 
 
-27. FORCE REMOVE CONTAINER
----------------------------
+============================================================
+                FORCE REMOVE CONTAINER
+============================================================
 
 A running container can be forcefully removed using:
 
 docker rm -f <container_id>
 
-
 Example:
 
 docker rm -f fa671c640475
 
-
-But normally:
+Normally:
 
 docker stop <container_id>
 
@@ -815,18 +856,13 @@ then:
 docker rm <container_id>
 
 
-28. DOCKER PS
--------------
+============================================================
+                       DOCKER PS
+============================================================
 
 docker ps
 
 Shows currently running containers.
-
-
-Example:
-
-docker ps
-
 
 It displays information such as:
 
@@ -838,8 +874,9 @@ It displays information such as:
 - Container name
 
 
-29. DOCKER PS -A
----------------
+============================================================
+                     DOCKER PS -A
+============================================================
 
 docker ps -a
 
@@ -851,22 +888,13 @@ It includes:
 - Stopped containers
 
 
-Example:
-
-docker ps -a
-
-
-30. DOCKER IMAGES
------------------
+============================================================
+                    DOCKER IMAGES
+============================================================
 
 docker images
 
 Shows Docker images available locally.
-
-Example:
-
-docker images
-
 
 It displays:
 
@@ -877,8 +905,9 @@ It displays:
 - Size
 
 
-31. DOCKER IMAGE STORAGE
-------------------------
+============================================================
+                 DOCKER IMAGE STORAGE
+============================================================
 
 After Docker build is completed, the filesystem layers
 are combined to form a Docker image.
@@ -898,28 +927,29 @@ Docker Image
 myenv:v1
 
 
-32. DOCKER PUSH
----------------
+============================================================
+                     DOCKER PUSH
+============================================================
 
-docker push is used to upload a Docker image to a
-remote registry such as Docker Hub.
+docker push is used to upload a Docker image to a remote
+registry such as Docker Hub.
 
 Example:
 
 docker push myenv:v1
 
-
 Flow:
 
 Local Docker Image
        |
-       | docker push
-       v
+docker push
+       |
 Docker Hub
 
 
-33. DOCKER PULL
----------------
+============================================================
+                     DOCKER PULL
+============================================================
 
 docker pull is used to download an image from a registry.
 
@@ -927,52 +957,54 @@ Example:
 
 docker pull myenv:v1
 
-
 Flow:
 
 Docker Hub
     |
-    | docker pull
-    v
+docker pull
+    |
 Docker Host
     |
-    v
 Local Docker Image
 
 
-34. DOCKER RUN WITH REMOTE IMAGE
----------------------------------
+============================================================
+             DOCKER RUN WITH REMOTE IMAGE
+============================================================
 
 If the required image is not available locally and we run:
 
 docker run myenv:v1
 
-Docker can obtain the image from a configured registry
+Docker can obtain the image from the configured registry
 and then create and start the container.
 
 Conceptually:
 
 Docker run
     |
-    v
 Check local image
     |
-    +---- Image available ---> Create container
+    +---- Image available
+    |         |
+    |         v
+    |     Create container
     |
     +---- Image unavailable
-                    |
-                    v
-              Pull image
-                    |
-                    v
-              Create container
-                    |
-                    v
-              Start container
+              |
+              v
+          Pull image
+              |
+              v
+        Create container
+              |
+              v
+        Start container
 
 
-35. BASIC DOCKER WORKFLOW
---------------------------
+============================================================
+                  BASIC DOCKER WORKFLOW
+============================================================
 
 Step 1:
 Install Docker on the machine.
@@ -1023,177 +1055,160 @@ The developer can create a container:
 docker run -it myenv:v1
 
 
-36. COMPLETE FLOW
------------------
+============================================================
+                    COMPLETE FLOW
+============================================================
 
-                 DOCKERFILE
-                     |
-                     |
-               docker build
-                     |
-                     v
-                DOCKER IMAGE
-                 myenv:v1
-                     |
-             +-------+-------+
-             |               |
-        docker push      docker run
-             |               |
-             v               v
-        DOCKER HUB        CONTAINER
-             |
-         docker pull
-             |
-             v
-       DOCKER IMAGE
-             |
-        docker run
-             |
-             v
-       NEW CONTAINER
-
-
-37. IMPORTANT DOCKER COMMANDS
-------------------------------
-
-docker --version
-
-Shows the installed Docker version.
-
-
-docker ps
-
-Shows running containers.
-
-
-docker ps -a
-
-Shows all containers.
-
-
-docker images
-
-Shows locally available images.
-
-
-docker run -it centos
-
-Creates and starts a new CentOS container.
-
-
-docker start <container_id>
-
-Starts an existing stopped container.
-
-
-docker stop <container_id>
-
-Stops a running container.
-
-
-docker attach <container_id>
-
-Attaches terminal to a running container.
-
-
-docker rm <container_id>
-
-Removes a stopped container.
-
-
-docker rm -f <container_id>
-
-Forcefully removes a container.
-
-
-docker build -t myenv:v1 .
-
-Builds a Docker image from Dockerfile.
-
-
-docker push myenv:v1
-
-Pushes an image to a remote registry.
-
-
-docker pull myenv:v1
-
-Pulls an image from a remote registry.
+Dockerfile
+    |
+docker build
+    |
+Docker Image
+myenv:v1
+    |
+    +---- docker run ----> Container
+    |
+    +---- docker push ---> Docker Hub
+                              |
+                              |
+                         docker pull
+                              |
+                              v
+                        Other Docker Host
+                              |
+                              |
+                         docker run
+                              |
+                              v
+                        New Container
 
 
 ============================================================
-                 QUICK INTERVIEW REVISION
+                IMPORTANT DOCKER COMMANDS
+============================================================
+
+docker --version
+-> Shows the installed Docker version.
+
+docker ps
+-> Shows running containers.
+
+docker ps -a
+-> Shows all containers.
+
+docker images
+-> Shows locally available images.
+
+docker run -it centos
+-> Creates and starts a new CentOS container.
+
+docker start <container_id>
+-> Starts an existing stopped container.
+
+docker stop <container_id>
+-> Stops a running container.
+
+docker attach <container_id>
+-> Attaches terminal to a running container.
+
+docker rm <container_id>
+-> Removes a stopped container.
+
+docker rm -f <container_id>
+-> Forcefully removes a container.
+
+docker build -t myenv:v1 .
+-> Builds a Docker image from Dockerfile.
+
+docker push myenv:v1
+-> Pushes an image to a remote registry.
+
+docker pull myenv:v1
+-> Pulls an image from a remote registry.
+
+
+============================================================
+                     QUICK REVISION
 ============================================================
 
 Docker
-  ---> Containerization platform
+-> Containerization platform
 
 Docker Host
-  ---> Machine where Docker is installed
+-> Machine where Docker is installed
+
+Docker Server / Docker Daemon
+-> Performs Docker operations and manages Docker resources
+
+Docker Client / CLI
+-> Interface used to execute Docker commands
 
 Dockerfile
-  ---> Contains instructions to build an image
+-> Contains instructions to build an image
 
 Docker Image
-  ---> Template/package used to create containers
+-> Template/package used to create containers
 
 Container
-  ---> Running isolated environment created from an image
+-> Running isolated environment created from an image
 
 Docker Build
-  ---> Creates an image from Dockerfile
+-> Creates an image from Dockerfile
 
 Docker Run
-  ---> Creates and starts a NEW container
+-> Creates and starts a NEW container
 
 Docker Start
-  ---> Starts an EXISTING stopped container
+-> Starts an EXISTING stopped container
 
 Docker Stop
-  ---> Stops a running container
+-> Stops a running container
 
 Docker Attach
-  ---> Connects terminal to a running container
+-> Connects terminal to a running container
 
 Docker RM
-  ---> Removes a container
+-> Removes a container
 
 Docker Images
-  ---> Shows local images
+-> Shows local images
 
 Docker PS
-  ---> Shows running containers
+-> Shows running containers
 
 Docker PS -A
-  ---> Shows all containers
+-> Shows all containers
 
 Docker Push
-  ---> Uploads image to remote registry
+-> Uploads image to remote registry
 
 Docker Pull
-  ---> Downloads image from remote registry
+-> Downloads image from remote registry
 
 Docker Hub
-  ---> Cloud-based Docker image registry
+-> Cloud-based Docker image registry
 
 
 ============================================================
-                ONE-LINE INTERVIEW ANSWER
+                  DOCKER SERVICE COMMANDS
 ============================================================
 
-Docker is a containerization platform that packages an
-application along with its dependencies into a lightweight,
-isolated container, making application deployment and
-execution consistent across different environments.
-============================================================
-
-=================================================================================================================
 docker -v
+
 sudo systemctl status docker
+
 sudo systemctl start docker
-sudo systemctl enable docker 
-----------------------
-sudo docker info-it will give you docker host information.
+
+sudo systemctl enable docker
+
+
+DOCKER INFO
+-----------
+
+sudo docker info
+
+It gives Docker Host information such as:
+
 Containers
 Images
 Docker version
@@ -1201,316 +1216,519 @@ Storage driver
 Docker Root Directory
 Operating System
 CPU/Architecture
-cd /var/lib/docker 
-=====================
-con lifecycle
--------------------
-sudo docker images - list the  image in docker host 
-Work:
+
+
+DOCKER ROOT DIRECTORY
+---------------------
+
+cd /var/lib/docker
+
+
+============================================================
+                  CONTAINER LIFECYCLE
+============================================================
+
+Start
+  |
+Stop
+  |
+Remove
+
+Container:
+
+Start
+ -> Stop
+ -> Remove
+
+
+============================================================
+                    DOCKER RUN WORK
+============================================================
+
 First Docker checks whether the image is available locally.
-If the image is not available locally, Docker pulls the image from the configured registry, commonly Docker Hub.
+
+If the image is not available locally, Docker pulls the image
+from the configured registry, commonly Docker Hub.
+
 After pulling the image, Docker creates and starts the container.
----------------------------------------------------------------------------------------------------------------
-sudo docker ps - list the running con in the docker host 
-sudo docker ps -a : list the running and stopped con in the docker host 
-------
+
+
+============================================================
+                     BASIC COMMANDS
+============================================================
+
+sudo docker images
+-> List the images in the Docker Host.
+
+sudo docker ps
+-> List the running containers in the Docker Host.
+
+sudo docker ps -a
+-> List the running and stopped containers in the Docker Host.
+
 sudo docker run imagename
+
 sudo docker run hello-world
 
-Docker image -> docker con
----------------------------------------------------------------
 
-Day-2
--------------
+============================================================
+                         DAY-2
+============================================================
+
 sudo docker run centos
-it
-------
-sudo docker run -it centos:7 -> inside con
-need to go out of con and con shoud run
-    => ctrl pq
- => con is running user need to go inside of con 
-     =>sudo docker attach conid
- =>con shoud stop and user need to come out from the con 
-     =>exit
- => con is stopped how to start and go inside of con 
-      =>sudo docker start conid
-	  =>sudo docker attach conid
-	  =>sudo docker stop conid (it will stop container from outside of container)
------------
-sudo docker run -it ubuntu
---
-itd
-======
-sudo docker run -itd centos:7
-sudo docker run -itd ubuntu
-
-fa671c640475
-==================================================
-remove the con and image 
----------------------------
-con start
-     =>stop
-	 =>remove
-con ->sudo docker rm conid
-image->sudo docker rmi image id 
-----
-httpd => web server
----
-sudo yum install httpd -y
-sudo systemctl start httpd
-sudo 
------------
-nginx ->
-tomcat ->
-----------------
-attach
-exec 
-=================
-sudo docker run -it centos
-   42  sudo docker run -it centos:7
-   43  clear
-   44  sudo docker ps
-   45  sudo docker attach fa671c640475
-   46  sudo docker ps
-   47  sudo docker ps -a
-   48  sudo docker start fa671c640475
-   49  sudo docker ps
-   50  sudo docker attach fa671c640475
-   51  clear
-   52  sudo docker run -itd centos:7
-   53  sudo docker ps
-   54  sudo docker ps -a
-   55  sudo docker rm a07745b4fe63 fa671c640475 c6fe5218dc35 88432bab8e60 80df1dfaf231
-   56  sudo docker ps
-   57  sudo docker ps -a
-   58  sudo docker stop  a07745b4fe63
-   59  sudo docker rm a07745b4fe63
-     sudo docker ps -a
-   clear
-     sudo docker run -itd centos:7
-     sudo docker ps -a
-     sudo docker images
-     sudo docker rmi centos:7
-     sudo docker ps
-    
-     sudo docker rmi centos:7
-     sudo docker ps -a
-     sudo docker rm 61cd5221e4ca
-   sudo docker rmi centos:7
-     sudo docker images
-     sudo docker rmi hello-world
-     clear
-     sudo docker images
-     sudo docker run -itd httpd
-    sudo docker ps
-     sudo docker run -itd tomcat
-     sudo docker run -itd jenkins
-   sudo docker run -itd jenkins2.x
-   sudo docker run -itd jenkins 2.x
-   clear
-     sudo docker run -itd jenkins:2.60.3
-   sudo docker ps
-   history
-==================================================================================
-sudo docker run -it centos
-Work: Downloads the CentOS image if not available locally, then creates and starts a container.
--it = interactive terminal, so you can enter commands inside the container.
 
 sudo docker run -it centos:7
-Work: Runs a CentOS version 7 container interactively.
-centos:7 means the image name is centos and the tag/version is 7.
+-> Enter inside the container.
+
+If we need to go out of the container and the container should
+continue running:
+
+CTRL + P
+CTRL + Q
+
+If the container is running and the user needs to go inside:
+
+sudo docker attach conid
+
+If the container should stop and the user needs to come out:
+
+exit
+
+If the container is stopped and we want to start and go inside:
+
+sudo docker start conid
+
+sudo docker attach conid
+
+To stop the container from outside:
+
+sudo docker stop conid
+
+
+============================================================
+                  DOCKER RUN MODES
+============================================================
+
+sudo docker run -it ubuntu
+
+-it
+-> Interactive terminal.
+
+sudo docker run -itd centos:7
+
+sudo docker run -itd ubuntu
+
+-itd:
+
+-i -> Interactive
+-t -> Terminal
+-d -> Detached/background mode
+
+
+============================================================
+                REMOVE CONTAINER AND IMAGE
+============================================================
+
+Container lifecycle:
+
+Start
+  ↓
+Stop
+  ↓
+Remove
+
+Container:
+
+sudo docker rm <container_id>
+
+Image:
+
+sudo docker rmi <image_id>
+
+
+============================================================
+                 WEB SERVER IMAGES
+============================================================
+
+httpd
+-> Web server
+
+sudo yum install httpd -y
+
+sudo systemctl start httpd
+
+nginx
+-> Web server
+
+tomcat
+-> Application server
+
+
+============================================================
+               ATTACH VS EXEC PRACTICE
+============================================================
+
+attach
+exec
+
+
+============================================================
+                  PRACTICAL COMMANDS
+============================================================
+
+sudo docker run -it centos
+
+sudo docker run -it centos:7
 
 clear
-Work: Clears the terminal screen.
-It does not affect Docker containers, images, or anything else.
 
 sudo docker ps
-Work: Lists currently running Docker containers.
-It shows container ID, image, status, ports, and name.
 
 sudo docker attach fa671c640475
-Work: Connects your terminal to the running container with this container ID.
-You can interact with the process running inside the container.
 
 sudo docker ps
-Work: Checks which containers are currently running.
-The attached container should appear if it is still running.
 
 sudo docker ps -a
-Work: Lists all containers on the Docker host.
-It includes running, stopped, and exited containers.
 
 sudo docker start fa671c640475
-Work: Starts the existing stopped container with this container ID.
-It does not create a new container.
 
 sudo docker ps
-Work: Checks whether the started container is now running.
-The container should appear in the output.
 
 sudo docker attach fa671c640475
-Work: Attaches your terminal to the existing running container.
-It allows you to interact with that container again.
 
 clear
-Work: Clears the terminal screen.
-No Docker resource is changed.
 
 sudo docker run -itd centos:7
-Work: Creates and starts a new CentOS 7 container in the background.
--i = interactive, -t = terminal, -d = detached/background mode.
 
 sudo docker ps
-Work: Lists the running containers.
-The newly created CentOS container should appear here.
 
 sudo docker ps -a
-Work: Lists all containers.
-It shows both running and stopped/exited containers.
+
+
+REMOVE CONTAINERS:
 
 sudo docker rm a07745b4fe63 fa671c640475 c6fe5218dc35 88432bab8e60 80df1dfaf231
-Work: Removes the specified containers.
-Normally, containers must be stopped before they can be removed; use "docker rm -f" if you intentionally want to force removal.
 
 sudo docker ps
-Work: Shows currently running containers.
-Removed containers will not appear.
 
 sudo docker stop a07745b4fe63
-Work: Gracefully stops the running container with this ID.
-The container is stopped but still exists.
 
 sudo docker rm a07745b4fe63
-Work: Removes the stopped container.
-The container is deleted, but its image is not deleted.
 
 sudo docker ps -a
-Work: Checks all remaining containers.
-The removed container should no longer appear.
 
-clear
-Work: Clears the terminal screen.
-It does not change Docker resources.
+
+RUN AGAIN:
 
 sudo docker run -itd centos:7
-Work: Creates and starts another CentOS 7 container in detached mode.
-If the image already exists locally, Docker uses the local image.
 
 sudo docker ps -a
-Work: Lists all containers.
-You can see the newly created CentOS 7 container and its status.
 
 sudo docker images
-Work: Lists Docker images stored locally.
-It shows repositories, tags, image IDs, and sizes.
+
+
+REMOVE IMAGE:
 
 sudo docker rmi centos:7
-Work: Removes the CentOS 7 image from the local image store.
-It will fail if a container still depends on that image; remove the containers first.
 
 sudo docker ps
-Work: Lists running containers.
-It does not list Docker images.
 
 sudo docker rmi centos:7
-Work: Tries to remove the CentOS 7 image again.
-If a container still references the image, Docker will normally refuse the removal.
 
 sudo docker ps -a
-Work: Lists all containers, including stopped containers.
-Use this to find containers that may still reference centos:7.
 
 sudo docker rm 61cd5221e4ca
-Work: Removes the specified container.
-After removing it, the CentOS image may become removable if no other container references it.
 
 sudo docker rmi centos:7
-Work: Removes the CentOS 7 image from the local system.
-The image can now be removed if no containers are using it.
 
 sudo docker images
-Work: Lists the remaining local Docker images.
-centos:7 should no longer be listed.
 
 sudo docker rmi hello-world
-Work: Removes the hello-world image from the local image store.
-It does not remove containers created from the image.
 
 clear
-Work: Clears the terminal screen.
-Docker resources remain unchanged.
 
 sudo docker images
-Work: Lists all Docker images available locally.
-You can check whether httpd, tomcat, jenkins, etc. are present.
+
+
+RUN APPLICATION IMAGES:
 
 sudo docker run -itd httpd
-Work: Creates and starts an Apache HTTP Server container in detached mode.
-If httpd is not local, Docker pulls the image from the configured registry, commonly Docker Hub.
 
 sudo docker ps
-Work: Lists currently running containers.
-The httpd container should appear if it started successfully.
 
 sudo docker run -itd tomcat
-Work: Creates and starts a Tomcat container in detached mode.
-Docker pulls the Tomcat image if it is not already available locally.
 
 sudo docker run -itd jenkins
-Work: Creates and starts a Jenkins container using the jenkins image/tag requested.
-If the image is not local, Docker attempts to pull it from the configured registry.
 
 sudo docker run -itd jenkins2.x
-Work: Tries to run an image named "jenkins2.x".
-If that image does not exist locally or in the configured registry, the command will fail.
 
 sudo docker run -itd jenkins 2.x
-Work: Docker interprets "jenkins" as the image and "2.x" as an invalid extra argument.
-This is not the correct way to specify a Jenkins version.
 
 clear
-Work: Clears the terminal screen.
-No Docker resource is changed.
 
 sudo docker run -itd jenkins:2.60.3
-Work: Creates and starts a Jenkins container using the specific image tag 2.60.3.
-jenkins = repository/image name, 2.60.3 = image tag/version.
 
 sudo docker ps
-Work: Lists the currently running containers.
-You can verify whether the Jenkins container is running.
 
 history
-Work: Displays the commands previously executed in the shell.
-
-what is the differnce between docker image and docker container ?
-
-"A Docker image is a read-only template used to create containers, 
-whereas a Docker container is a running instance of that image."
-Image = Blueprint 🏗️
-Container = Running application 🚀
 
 
+============================================================
+             COMMAND-BY-COMMAND EXPLANATION
+============================================================
+
+sudo docker run -it centos
+-> Downloads the CentOS image if it is not available locally,
+   then creates and starts a container.
+-> -it = interactive terminal, so you can enter commands inside
+   the container.
+
+sudo docker run -it centos:7
+-> Runs a CentOS version 7 container interactively.
+-> centos:7 means image name = centos and tag/version = 7.
+
+clear
+-> Clears the terminal screen.
+-> It does not affect Docker containers or images.
+
+sudo docker ps
+-> Lists currently running Docker containers.
+-> It shows container ID, image, status, ports and name.
+
+sudo docker attach fa671c640475
+-> Connects your terminal to the running container with this ID.
+-> You can interact with the process running inside the container.
+
+sudo docker ps
+-> Checks which containers are currently running.
+-> The attached container should appear if it is still running.
+
+sudo docker ps -a
+-> Lists all containers on the Docker Host.
+-> Includes running, stopped and exited containers.
+
+sudo docker start fa671c640475
+-> Starts the existing stopped container with this ID.
+-> It does not create a new container.
+
+sudo docker ps
+-> Checks whether the started container is now running.
+
+sudo docker attach fa671c640475
+-> Attaches your terminal to the existing running container.
+-> Allows you to interact with that container again.
+
+clear
+-> Clears the terminal screen.
+-> No Docker resource is changed.
+
+sudo docker run -itd centos:7
+-> Creates and starts a new CentOS 7 container in the background.
+-> -i = interactive
+-> -t = terminal
+-> -d = detached/background mode.
+
+sudo docker ps
+-> Lists the running containers.
+-> The newly created CentOS container should appear.
+
+sudo docker ps -a
+-> Lists all containers.
+-> Shows both running and stopped/exited containers.
+
+sudo docker rm a07745b4fe63 fa671c640475 c6fe5218dc35 88432bab8e60 80df1dfaf231
+-> Removes the specified containers.
+-> Normally containers must be stopped before removal.
+-> docker rm -f can be used for intentional force removal.
+
+sudo docker ps
+-> Shows currently running containers.
+-> Removed containers will not appear.
+
+sudo docker stop a07745b4fe63
+-> Gracefully stops the running container with this ID.
+-> The container is stopped but still exists.
+
+sudo docker rm a07745b4fe63
+-> Removes the stopped container.
+-> The container is deleted, but its image is not deleted.
+
+sudo docker ps -a
+-> Checks all remaining containers.
+-> The removed container should no longer appear.
+
+clear
+-> Clears the terminal screen.
+-> It does not change Docker resources.
+
+sudo docker run -itd centos:7
+-> Creates and starts another CentOS 7 container in detached mode.
+-> If the image already exists locally, Docker uses the local image.
+
+sudo docker ps -a
+-> Lists all containers.
+-> You can see the newly created CentOS 7 container and its status.
+
+sudo docker images
+-> Lists Docker images stored locally.
+-> Shows repositories, tags, image IDs and sizes.
+
+sudo docker rmi centos:7
+-> Removes the CentOS 7 image from the local image store.
+-> It will fail if a container still depends on that image.
+
+sudo docker ps
+-> Lists running containers.
+-> It does not list Docker images.
+
+sudo docker rmi centos:7
+-> Tries to remove the CentOS 7 image again.
+-> If a container still references the image, Docker normally
+   refuses the removal.
+
+sudo docker ps -a
+-> Lists all containers including stopped containers.
+-> Use this to find containers that may reference centos:7.
+
+sudo docker rm 61cd5221e4ca
+-> Removes the specified container.
+-> After removing it, the CentOS image may become removable if
+   no other container references it.
+
+sudo docker rmi centos:7
+-> Removes the CentOS 7 image if no containers are using it.
+
+sudo docker images
+-> Lists the remaining local Docker images.
+-> centos:7 should no longer be listed.
+
+sudo docker rmi hello-world
+-> Removes the hello-world image from the local image store.
+-> It does not remove containers created from that image.
+
+clear
+-> Clears the terminal screen.
+-> Docker resources remain unchanged.
+
+sudo docker images
+-> Lists all Docker images available locally.
+-> Check whether httpd, tomcat, jenkins, etc. are present.
+
+sudo docker run -itd httpd
+-> Creates and starts an Apache HTTP Server container in
+   detached mode.
+-> If httpd is not local, Docker pulls the image from the
+   configured registry, commonly Docker Hub.
+
+sudo docker ps
+-> Lists currently running containers.
+-> The httpd container should appear if it started successfully.
+
+sudo docker run -itd tomcat
+-> Creates and starts a Tomcat container in detached mode.
+-> Docker pulls the Tomcat image if it is not available locally.
+
+sudo docker run -itd jenkins
+-> Creates and starts a Jenkins container using the requested
+   jenkins image/tag.
+-> If the image is not local, Docker attempts to pull it.
+
+sudo docker run -itd jenkins2.x
+-> Tries to run an image named jenkins2.x.
+-> If that image does not exist locally or in the configured
+   registry, the command will fail.
+
+sudo docker run -itd jenkins 2.x
+-> Docker interprets "jenkins" as the image and "2.x" as an
+   extra argument.
+-> This is not the correct way to specify a Jenkins version.
+
+clear
+-> Clears the terminal screen.
+-> No Docker resource is changed.
+
+sudo docker run -itd jenkins:2.60.3
+-> Creates and starts a Jenkins container using the specific
+   image tag 2.60.3.
+-> jenkins = repository/image name
+-> 2.60.3 = image tag/version.
+
+sudo docker ps
+-> Lists the currently running containers.
+-> Verify whether the Jenkins container is running.
+
+history
+-> Displays commands previously executed in the shell.
 
 
+============================================================
+            DOCKER IMAGE VS DOCKER CONTAINER
+============================================================
+
+Docker Image:
+"A Docker image is a read-only template used to create containers."
+
+Docker Container:
+"A Docker container is a running instance of that image."
+
+Easy way to remember:
+
+Image = Blueprint
+Container = Running application
 
 
+============================================================
+                  FINAL REVISION
+============================================================
 
+Dockerfile
+    ↓
+docker build
+    ↓
+Docker Image
+    ↓
+docker run
+    ↓
+Docker Container
 
+For sharing:
 
+Docker Image
+    ↓
+docker push
+    ↓
+Docker Hub
+    ↓
+docker pull
+    ↓
+Docker Host
+    ↓
+docker run
+    ↓
+New Container
 
+Container control:
 
+docker create -> Create container only
 
+docker start  -> Start existing stopped container
 
+docker run    -> Create + Start new container
 
+docker stop   -> Stop running container
 
+docker attach -> Enter/attach to running container
 
+docker rm     -> Remove container
 
+docker rmi    -> Remove image
 
+docker ps     -> Running containers
 
+docker ps -a  -> All containers
 
+docker images -> Local images
 
+docker push   -> Upload image
 
-
-
-
+docker pull   -> Download image
