@@ -380,3 +380,190 @@ INTERVIEW ANSWER:
 "Our CI/CD pipeline starts when a developer pushes code to GitHub. A webhook triggers Jenkins, which checks out the code, builds and tests it using Maven, and sends it to SonarQube for code-quality analysis. After the Quality Gate passes, the artifact is stored in Nexus. Jenkins then builds a Docker image, scans it using Trivy, pushes it to Docker Hub, and deploys it to Kubernetes using kubectl apply.
 
 For application access, the user request comes from the browser to GoDaddy DNS, then Route 53, the AWS Application Load Balancer, and finally the NGINX Ingress Controller. NGINX performs path-based routing: `/` goes to the React UI service, while `/api/` goes to the Spring Boot API service. The Spring Boot application communicates with AWS RDS MySQL."
+============================================================================================================
+                           STEP BY STEP PROCESS PROJECT DAY-10
+============================================================================================================
+1/- first going to aws console then we go to rds (aurora and rds)
+2/- go to data bases > full config >
+inside set-up we will go as deafult and select free tier and chnages done given below
+
+public access = yes
+ DB instance identifier: IDREAM
+Master username: root
+Master password: 1q2w3e4r
+Database port: 3306
+Initial database name: idream_demo
+
+The user interacts with the UI, which sends requests to the API.
+The API then processes these requests and communicates with the idream_demo database.
+A second user connects to an EC2 instance, which also communicates directly with the same database.
+
+
+3/-CREATE A EC2 INSTANCE AND SECURITY GROUP PORT 3306 AS DB.
+my sql clinet install = sudo yum mysql-client -y
+next step-
+copy the highlighted command from aws server database section connection steps:
+copy until this point -p = mysql -h idream.c16qgus4e4vi.ap-south-1.rds.amazonaws.com -P 3306 -u root -p
+after hiting this link in our server 
+server will ask password = we have to give that we craeted recently .
+then go through some database command :
+i/show databases;
+ii/USE idream_demo;
+iii/CREATE TABLE courses (
+    id          INT AUTO_INCREMENT PRIMARY KEY,
+    title       VARCHAR(100)   NOT NULL,
+    category    VARCHAR(50)    NOT NULL,
+    duration    VARCHAR(30)    NOT NULL,
+    rating      DECIMAL(2,1)   NOT NULL,
+    reviews     INT            NOT NULL DEFAULT 0,
+    description VARCHAR(255)   NOT NULL,
+    icon        VARCHAR(50)    NOT NULL,   -- CSS class / emoji key
+    level       VARCHAR(20)    NOT NULL,   -- Beginner / Intermediate / Advanced
+    created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+iv/INSERT INTO courses (title, category, duration, rating, reviews, description, icon, level) VALUES
+('AWS Cloud Training',        'Cloud',   '40 Hours', 4.8, 320, 'Become an AWS Cloud Expert with hands-on labs and real-time projects.',          'aws',        'Intermediate'),
+('DevOps with Kubernetes',    'DevOps',  '45 Hours', 4.9, 280, 'Master DevOps & Kubernetes from scratch with live cluster exercises.',             'kubernetes', 'Advanced'),
+('Jenkins CI/CD',             'DevOps',  '20 Hours', 4.7, 210, 'Implement end-to-end CI/CD pipelines using Jenkins and industry tools.',           'jenkins',    'Intermediate'),
+('Docker & Containers',       'DevOps',  '20 Hours', 4.8, 190, 'Learn containerization, Docker Compose, and production deployment strategies.',    'docker',     'Beginner'),
+('Terraform (IaC)',           'Cloud',   '25 Hours', 4.7, 160, 'Infrastructure as Code – provision and manage cloud resources with Terraform.',     'terraform',  'Intermediate'),
+('Microsoft Azure',           'Cloud',   '35 Hours', 4.8, 180, 'Build and manage cloud solutions on Microsoft Azure from fundamentals to expert.',  'azure',      'Intermediate'),
+('Linux Administration',      'Systems', '30 Hours', 4.6, 145, 'Master Linux administration, shell scripting and server management skills.',        'linux',      'Beginner'),
+('Python for DevOps',         'Programming', '25 Hours', 4.8, 220, 'Automate DevOps tasks with Python – scripting, APIs, and automation tools.',   'python',     'Beginner'),
+('Git & GitHub Mastery',      'DevOps',  '15 Hours', 4.9, 310, 'Version control, branching strategies, pull requests and GitHub Actions workflows.','git',       'Beginner'),
+('Ansible Automation',        'DevOps',  '20 Hours', 4.7, 130, 'Automate infrastructure provisioning and configuration management with Ansible.',   'ansible',    'Intermediate'),
+('GCP – Google Cloud',        'Cloud',   '38 Hours', 4.6, 115, 'Deploy, scale and manage applications on Google Cloud Platform.',                  'gcp',        'Intermediate'),
+('Security & DevSecOps',      'Security','30 Hours', 4.9, 175, 'Embed security into DevOps pipelines – Trivy, SonarQube, OWASP and more.',         'security',   'Advanced');
+
+v/select * from courses;
+
+
+4/-
+Kubernetes:
+        1. Control Plane - t3.medium - 20 GB GP3 - 1
+        2. Worker Nodes - t3.medium - 20 GB GP3 - 2
+Jenkins:
+        1. Master Machine - t3.medium - 20 GB GP3 - 1
+        1. Worker Machine - t3.medium - 20 GB GP3 - 2
+
+
+in jenkins add plugin pipeline stage:view
+add node1 = jenkins-ui which label = ui
+add node2 =jenkins-ms which label = ms
+
+docker link = https://app.docker.com/accounts/quantumdevi?index
+so now we created two repo in docker 
+1/cicd-react-ui   = quantumdevi/cicd-ms-api
+2/cicd-ms-api     = quantumdevi/cicd-ms-api
+
+THEN WE GENERATE PERSONAL ACCESS TOKEEN IN DOCKER 
+>ACCOUNT SETTING>PERSONAL ACCESS TOKEN (PROVIDE READ WRITE)
+AFTER CREATING YOU WILL GET ONE COMMAND AND PASS TOOKEN
+
+IN JENKINS WOKER NODE AND MS SERVER RUN THOSE TWO DOCKER CREADENTIAL 
+WE GOT FROM DOCKER TOKEN TO GIVE THOSE SERVER DOCKER ACCESS
+before that docker must be installed there .
+
+
+Worker Node+ms NODE SAME SET UP:
+#1. Download kubectl file from:
+curl -LO "https://dl.k8s.io/release/v1.35.0/bin/linux/amd64/kubectl"
+chmod +x kubectl
+sudo mv kubectl /usr/local/bin
+kubectl version
+kubectl version --client
+kubectl version --client --output=yaml
+
+
+TO GIVE CONNECTIVITY IN OUR CONTROL NODE WHERE WE ALREDY INSTALLED KUBN8TES
+.KUBE THERE WE HAVE config FILE THAT FILE CONTENT WE NEED TO PASTE TO OTHER TO GET CONNECTIVITY.
+
+> SO WE IN WORKER-NODE + ms node 
+create a folder = mkdir .kube > cd .kube > cat > config (paste the content)
+
+then we goto control server 
+git clone https://github.com/devsecopstrainer/project-kubernetes-yml.git
+inside this folder we run that script so that namespace created inside this
+and follow one by one in deploy.sh file in here : https://github.com/devsecopstrainer/project-kubernetes-yml.git
+or we run script using this in controll node.
+
+
+then we go to jenkins create a pipeline /jenkins file which link 
+is:::>create  react ui pipeline https://github.com/devixhub/react-ui.git add this
+and in jenkinsfile name add this : Jenkinsfile-UI   (which avilable in cicd repo)
+
+https://github.com/devsecopstrainer/cicd-jenkins-docker/blob/main/Jenkinsfile-UI
+
+
+
+
+
+1:19
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

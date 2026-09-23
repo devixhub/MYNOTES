@@ -1732,3 +1732,333 @@ docker images -> Local images
 docker push   -> Upload image
 
 docker pull   -> Download image
+=========================================================================
+
+    DOCKER REVISION
+
+1/ What is the difference between Docker and a container?
+2/ What is the difference between a Docker image and a container?
+3/ What is the difference between a Dockerfile and a Docker image?
+4/ What is the difference between docker run -it imagename and docker run -itd imagename?
+5/ Suppose we run docker run -it imagename:
+   - How does a user exit the container without stopping it?
+   - How does a user exit and stop the container?
+   - If the container is stopped, how do you start and get back inside?
+6/ If a Docker host daemon is not started and you run a Docker command, will it work or not?
+7/ What is the difference between docker pull and docker run?
+8/ What is the use of the docker info command?
+9/ What is the default storage directory/location of Docker on a Linux server?
+10/ How do you remove an image if a container was created from it?
+
+
+===============================
+Day-3
+================
+  docker logs -f conatiner id
+  docker exec  conatiner id (when u are going to run some command and conatiner is running in deattched mode
+  
+  docker exec -it conatiner id /bin/bash ->it will create another process with new command and it will go inside 
+  exit 
+  docker run -it -e mycompany=techm centos /bin/bash =>running the env 
+  docker run -it -w /tmp centos /bin/bash  =>switch a dir 
+  docker run -it -e mycompany=techm -w /bin cetos sh test.sh 
+  
+  docker cp <hostfile> <conatinerid>:path
+  docker cp <container id >:path <hostfile>
+  
+  example:
+   docker cp myfile test:/tmp
+   docker exec test ls /tmp
+   docker exec test cat /tmp/myfile
+=====================================================
+DAY-4
+========================
+DOCKER COMMANDS
+========================
+
+1. CREATE CONTAINER
+-------------------
+COMMAND:
+********
+sudo docker run -itd --name myos centos:7
+********
+Work: Creates and starts a CentOS 7 container named myos.
+
+GENERAL:
+********
+sudo docker run -itd --name containername imagename
+********
+
+
+2. CONTAINER LOGS
+-----------------
+COMMAND:
+********
+docker logs -f container_id
+********
+Work: Shows container logs continuously.
+-f = Follow logs
+
+
+3. EXECUTE COMMAND
+------------------
+COMMAND:
+********
+docker exec container_id COMMAND
+********
+Work: Executes a command inside a running container.
+
+Example:
+********
+docker exec test ls /tmp
+********
+Work: Lists /tmp inside the test container.
+
+
+4. ENTER CONTAINER
+------------------
+COMMAND:
+********
+docker exec -it test /bin/bash
+********
+Work: Opens Bash shell inside the running container.
+
+
+5. CREATE FILE
+--------------
+COMMAND:
+********
+docker exec test touch /tmp/testfile
+********
+Work: Creates testfile inside container /tmp.
+
+Check:
+********
+docker exec test ls /tmp
+********
+
+
+6. COPY HOST → CONTAINER
+------------------------
+COMMAND:
+********
+docker cp myfile test:/tmp
+********
+Work: Copies myfile from host to /tmp inside test container.
+
+GENERAL:
+********
+docker cp <hostfile> <container_id>:<path>
+********
+
+
+7. COPY CONTAINER → HOST
+------------------------
+COMMAND:
+********
+docker cp test:/tmp/myfile /tmp/myfile
+********
+Work: Copies myfile from container to host.
+
+GENERAL:
+********
+docker cp <container_id>:<path> <hostfile>
+********
+
+
+8. ENVIRONMENT VARIABLE
+-----------------------
+COMMAND:
+********
+docker run -it -e mycompany=techm centos /bin/bash
+********
+Work: Creates CentOS container and sets mycompany=techm.
+
+Check:
+********
+echo $mycompany
+********
+
+
+9. WORKING DIRECTORY
+--------------------
+COMMAND:
+********
+docker run -it -w /tmp centos /bin/bash
+********
+Work: Starts the container with /tmp as the working directory.
+
+-w = Working directory
+
+
+QUICK REVISION
+========================
+docker run   → Create + start new container
+docker logs  → View container logs
+docker exec  → Run command inside container
+docker cp    → Copy files Host ↔ Container
+-e            → Environment variable
+-w            → Working directory
+--------------------------------------------
+port mapping
+-----------------------------
+expose=>c1 port: 80
+map:docker host port-avl
+sudo docker run -itd --name myapp1 httpd 
+sudo docker run -itd -p 8080:80 --name myapp2 httpd
+sudo docker run -itd -P --name myapp3 httpd
+
+http://65.2.5.241:8080
+http://65.2.5.241:32768
+
+
+when we entering container through docker exec comand then exit command won't stop container 
+where when we enter through docker attach exit command stop container
+when we do attach command after docker exec it will stop container explictily
+
+DAY-4
+========================
+VOLUME MAPPING
+========================
+WHY?
+Container data can be lost when a container is deleted. Volume mapping stores important data outside the container so it can persist.
+
+BASIC IDEA:
+HOST /tmp/test  ─────→  CONTAINER /tmp
+
+1. BASIC VOLUME MAPPING
+------------------------
+COMMAND:
+********
+sudo docker run -itd -v /tmp/test:/tmp --name myos2 centos
+********
+Work: Creates CentOS container "myos2" and maps HOST /tmp/test → CONTAINER /tmp.
+
+-v HOST_PATH:CONTAINER_PATH
+LEFT  = Host path
+RIGHT = Container path
+
+Example:
+-v /backup/data:/data
+/backup/data (Host) → /data (Container)
+
+2. APPLICATION PATH
+-------------------
+Applications have their own data directory. We can map host storage directly to that application path.
+
+Apache application path:
+/usr/local/apache2/htdocs
+
+COMMAND:
+********
+sudo docker run -itd -p 8085:80 -v /tmp/test:/usr/local/apache2/htdocs --name mywebserver1 httpd
+********
+Work: Runs Apache and maps HOST /tmp/test → Apache's web-root directory.
+
+Flow:
+Browser → HOST:8085 → Container:80 → Apache → /usr/local/apache2/htdocs
+                                                   ↑
+                                              /tmp/test (Host)
+
+NOTE:
+For the official httpd image, use:
+/usr/local/apache2/htdocs
+
+3. PORT + VOLUME MAPPING
+------------------------
+PORT MAPPING:
+********
+-p 8085:80
+********
+Host port 8085 → Container port 80
+
+VOLUME MAPPING:
+********
+-v /tmp/test:/usr/local/apache2/htdocs
+********
+Host directory → Container application directory
+
+So one command can perform both port mapping and volume mapping.
+
+========================
+DOCKER NAMED VOLUME
+========================
+Instead of providing our own host directory, Docker can create and manage the storage. This is called a Named Volume.
+
+4. LIST VOLUMES
+---------------
+COMMAND:
+********
+sudo docker volume ls
+********
+Work: Lists Docker-managed volumes.
+
+5. CREATE VOLUME
+----------------
+COMMAND:
+********
+sudo docker volume create volumename
+********
+Work: Creates a Docker-managed volume.
+
+Docker normally stores volumes under:
+/var/lib/docker/volumes/
+
+6. CREATE test1 VOLUME
+----------------------
+COMMAND:
+********
+sudo docker volume create test1
+********
+Work: Creates a named volume called "test1".
+
+Data location:
+/var/lib/docker/volumes/test1/_data
+
+7. CHECK VOLUME DATA
+--------------------
+COMMAND:
+********
+cd /var/lib/docker/volumes/test1/_data
+********
+Work: Opens the actual data directory of volume "test1".
+
+8. ATTACH NAMED VOLUME
+----------------------
+COMMAND:
+********
+sudo docker run -itd -v test1:/tmp --name myos3 centos
+********
+Work: Creates CentOS container "myos3" and mounts Docker volume "test1" → /tmp.
+
+Flow:
+Docker Volume test1
+        ↓
+/var/lib/docker/volumes/test1/_data
+        ↓
+Container /tmp
+
+========================
+BIND MOUNT vs NAMED VOLUME
+========================
+
+BIND MOUNT:
+********
+-v /tmp/test:/tmp
+********
+We provide the HOST directory.
+Host directory → Container path
+
+NAMED VOLUME:
+********
+-v test1:/tmp
+********
+Docker manages the storage.
+Docker volume → Container path
+
+EASY MEMORY:
+Bind Mount = "Docker, use MY directory."
+Named Volume = "Docker, CREATE and MANAGE the storage."
+
+INTERVIEW ANSWER:
+Volume mapping connects external storage to a path inside a container and helps persist application data even when containers are deleted or recreated.
