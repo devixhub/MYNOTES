@@ -1,5 +1,63 @@
 TERRAFORM 
 --------------
+SHORT
+=====
+In Terraform, I first write the desired infrastructure in .tf files and configure the required provider. I run terraform init to initialize Terraform and download the provider. Then I run terraform plan to compare my desired configuration with the current state and generate the execution plan. After reviewing it, I run terraform apply, and Terraform uses the provider to communicate with the cloud API and create or modify the resources. Terraform then updates the state file with the information about those resources. For larger environments, I organize resources into modules, use variables for reusable configuration, outputs for sharing values, and remote state for team collaboration.
+LONG
+====
+Terraform is an Infrastructure as Code tool that I use to provision and manage infrastructure in a declarative way. In a typical environment, I start by writing Terraform configuration files where I define what infrastructure I need, such as a VPC, subnet, security group, EC2 instance, or S3 bucket.
+
+My Terraform project normally contains files such as main.tf, provider.tf, variables.tf, terraform.tfvars, and outputs.tf. The provider.tf defines the cloud provider and region, while the resource configuration defines my desired infrastructure.
+
+For example, if I'm working with AWS, I configure the AWS provider. Then, when I run terraform init, Terraform initializes the working directory, downloads the required provider plugins, and initializes the backend if one is configured.
+
+After initialization, I run terraform plan. At this stage Terraform reads my configuration and uses its state information to determine what changes are required to make the actual infrastructure match my desired configuration. Terraform generates an execution plan showing whether resources need to be created, modified, or destroyed. terraform plan itself does not normally make those infrastructure changes.
+
+Once I review the plan, I run terraform apply. Terraform then uses the AWS provider to communicate with the AWS APIs and performs the required operations. For example, it may first create a VPC, then a subnet, security group, and EC2 instance based on their dependencies.
+
+After the infrastructure is created or modified, Terraform records the current information about the resources in its state. The state is important because Terraform uses it during future operations to understand which real infrastructure objects are managed by the configuration and what their known attributes are.
+
+In a team environment, instead of keeping the state only on my local machine, I can use a remote backend such as Amazon S3. This gives the team a centralized state location and can be combined with state locking to help prevent conflicting updates.
+
+For larger projects, I normally don't keep everything in one large file. I create reusable modules such as a VPC module, security-group module, EC2 module, or S3 module. The root module calls these child modules and passes values through input variables. The child module creates the resources and can return information through outputs.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 "Terraform is used for infrastructure provisioning, while Ansible is used for configuration management. 
 Terraform creates the server and other cloud resources, and Ansible configures the server after it has been created.
 | Feature           | Ansible                                                  | Terraform                                        |

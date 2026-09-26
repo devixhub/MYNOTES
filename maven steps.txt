@@ -1,5 +1,23 @@
 MAVEN STEPS :-
 --------------
+MAVEN – END-TO-END INTERVIEW ANSWER
+
+====================================
+
+“Maven is a build automation and dependency management tool used mainly for Java projects. When I run a Maven command, it first reads the pom.xml to understand the project, dependencies, plugins, packaging, and repository configuration.
+
+Maven then checks the local repository .m2 for required dependencies and plugins. If something is missing, it downloads it from a remote repository such as Maven Central or Nexus.
+
+After that, Maven executes the requested lifecycle phase and all previous required phases. For example, with mvn package, it validates the project, compiles the Java code, runs tests, and creates the JAR/WAR inside the target directory.
+
+With mvn install, that artifact is also stored in the local .m2 repository. With mvn deploy, Maven publishes the artifact to a remote repository such as Nexus using the configuration from distributionManagement and credentials from settings.xml.
+
+The actual build operations are performed by Maven plugins, such as the compiler plugin for compilation and Surefire for testing. So, end to end, Maven reads the POM, resolves dependencies and plugins, executes the lifecycle, creates the artifact, and finally stores or deploys it.”
+
+
+
+
+
 STEP-1:
 INSTALL JAVA
 sudo yum install java-21 --y   (21,17 java version currently supporting)
@@ -212,9 +230,35 @@ FOR MAVEN: C:\Users\DELL\Desktop\mvn_install\bin
 FOR JAVA: C:\Program Files\Java\jdk-21.0.11\bin
 --------------------------------------------------------
 nexux
-
-
 ==================================
+NEXUS ARCHITECTURE
+
+Nexus is a Repository Manager used to store and manage application artifacts like JAR, WAR, Docker images etc. In a DevOps environment, Maven/Jenkins ↔ Nexus is commonly used for downloading dependencies and storing build artifacts.
+
+Nexus mainly has two important repositories for application versions:
+Release Repository
+Used to store stable/final versions of the application.
+
+Example:
+
+app-1.0.jar
+app-2.0.jar
+
+Once a release is published, the same version is normally not changed because it represents a fixed and stable build.
+Snapshot Repository
+Used to store development versions of the application.
+Example:
+
+app-1.0-SNAPSHOT.jar
+
+During development, the same SNAPSHOT version can be built many times, so newer builds can update the snapshot artifact. After development is completed, we normally create a final Release version.
+Other Repository Types
+Hosted Repository → Stores artifacts created by our organization.
+Proxy Repository → Downloads artifacts from an external repository like Maven Central and caches them in Nexus.
+Group Repository → Combines multiple repositories and provides a single URL to Maven.
+
+
+
 nexus install
 =========================
 Step1:

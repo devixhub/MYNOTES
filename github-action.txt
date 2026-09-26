@@ -1,3 +1,43 @@
+GITHUB ACTIONS
+==============
+GitHub Actions is a CI/CD automation platform provided by GitHub. It is used to automate software development activities such as building the application, running tests, performing code-quality and security checks, creating Docker images, pushing images to a container registry, and deploying the application.
+
+In GitHub Actions, we define our automation inside a YAML workflow file, normally under the .github/workflows directory. This workflow is triggered by events such as a code push, pull request, or manual execution.
+
+When the event occurs, GitHub reads the workflow file and starts the defined job. Each job runs on a runner. A runner is the machine where the actual commands and actions are executed. It can be a GitHub-hosted runner such as ubuntu-latest, or it can be a self-hosted runner managed by the organization.
+
+Inside a job, we define multiple steps. Each step performs one particular task. For example, one step can check out the source code, another can install or configure Java, another can run mvn clean package, and another can build and push a Docker image.
+
+GitHub Actions provides reusable actions through the uses keyword. For example, actions/checkout@v4 is used to check out the repository code. We can also use the run keyword to execute our own shell commands such as mvn clean package, docker build, or terraform plan.
+
+In a typical CI/CD pipeline, when the developer pushes code to GitHub, the workflow is triggered. GitHub allocates a runner, the source code is checked out, the required tools are configured, and then the application is built and tested. After successful testing, we can perform SonarQube analysis or security scanning, create a Docker image, push that image to Docker Hub or another registry, and finally deploy the application to environments such as AWS or Kubernetes.
+
+GitHub Actions also supports secrets. Sensitive information such as AWS credentials, Docker Hub credentials, tokens, and passwords can be stored in GitHub Secrets instead of putting them directly inside the YAML file. During workflow execution, these values are provided securely to the required step or job.
+
+If we have multiple jobs, we can control their execution order using the needs keyword. For example, the Docker job can depend on the build job, and the deployment job can depend on the Docker job. So the flow can be Build → Docker → Deploy.
+
+One important point is that GitHub-hosted runners are temporary. The runner is created for the job and is cleaned up after the job finishes. Therefore, persistent information such as Terraform state should not depend on the runner's local filesystem. For Terraform CI/CD, we normally use a remote backend such as Amazon S3 so that all workflow runs can access the same Terraform state.
+
+So overall, GitHub Actions provides an automated CI/CD pipeline where a GitHub event triggers a workflow, the workflow executes jobs on runners, and the jobs perform steps such as checkout, build, test, scan, package, Docker image creation, and deployment.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 step-1:.github/workflows
 
 step 2:

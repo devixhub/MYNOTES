@@ -2062,3 +2062,63 @@ Named Volume = "Docker, CREATE and MANAGE the storage."
 
 INTERVIEW ANSWER:
 Volume mapping connects external storage to a path inside a container and helps persist application data even when containers are deleted or recreated.
+
+
+=============================================================
+IMAGE LIFE CYCLE
+-------------------------
+dockerfile
+from con we can create image ----->1st 
+---------------------------------------------
+sudo docker run -it --name mycentosjava centos:7
+--
+due to old version of centos we use down two pathes for lrt yum work
+sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-*
+sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-*
+install inside con 
+=========================
+yum install java-17 -y
+yum install maven -y
+yum install git -y
+----------
+create image from con
+===========================
+sudo docker commit c1 mycentosImage
+sudo docker commit conname imagename 
+sudo docker commit a62fc8d791a5 mycentosimage
+-----------------
+how to change the TAG name for image 
+------------------------
+sudo docker tag mytestosimage:latest devopsawstrainer/mycentosupdateImage:v1.0
+
+1st time in dockerhost we need login for dockerhub
+------
+sudo docker login 
+    =>username
+	=>password 
+================================================
+DOCKER IMAGE FULL LIFE CYCLE – INTERVIEW SUMMARY
+
+
+I started with the official HTTPD image and created a container from it.
+sudo docker run -itd --name myhttpd -p 80:80 httpd
+
+Then I added my custom application content, such as an index.html,
+inside the running container using docker cp.
+sudo docker cp index.html myhttpd:/usr/local/apache2/htdocs/index.html
+
+After making the required changes, I used docker commit to create
+a new Docker image from the modified container.
+sudo docker commit myhttpd myprojects:v1.0
+
+Then I used docker tag to give the image a Docker Hub repository name
+and version, for example:
+sudo docker tag myprojects:v1.0 quantumdevi/myprojects:v1.0
+
+The tag does not create a new image; it gives the same image another
+name/tag.
+After that, I logged in to Docker Hub and used docker push to upload
+the image.
+Finally, I can use docker pull to download the image on another
+Docker host and docker run to create a new container from it.
+===============================================================
