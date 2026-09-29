@@ -2122,3 +2122,8 @@ the image.
 Finally, I can use docker pull to download the image on another
 Docker host and docker run to create a new container from it.
 ===============================================================
+
+what is difference between port mapping and volume mapping ?
+Port mapping is used to expose a container application through a host
+port, while volume mapping is used to connect storage from the host to
+the container.
